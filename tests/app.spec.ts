@@ -259,3 +259,43 @@ test('creates a live-updating bar chart and exports PNG', async ({
 
   expect(download.suggestedFilename()).toBe('easysheet-chart.png');
 });
+
+test('updates and exports the picture graph', async ({ page }, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Picture graph flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+  await page
+    .getByRole('heading', { name: 'Favorite Fruit Pictograph' })
+    .scrollIntoViewIfNeeded();
+
+  await page.getByRole('button', { name: 'Add one Apples' }).click();
+  await expect(page.getByTestId('picture-column-apples')).toContainText(
+    '4 total',
+  );
+
+  await page.getByRole('spinbutton', { name: 'Bananas' }).fill('7');
+  await expect(page.getByTestId('picture-column-bananas')).toContainText(
+    '7 total',
+  );
+
+  await page.getByLabel('Each picture equals').fill('2');
+  await expect(
+    page.locator('[aria-label="Bananas pictures"] .picture-symbol'),
+  ).toHaveCount(4);
+
+  await page
+    .getByRole('button', { name: 'Drag one picture' })
+    .dragTo(page.getByTestId('picture-column-oranges'));
+  await expect(page.getByTestId('picture-column-oranges')).toContainText(
+    '5 total',
+  );
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export Picture PNG' }).click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe('easysheet-picture-graph.png');
+});

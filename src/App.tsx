@@ -17,6 +17,7 @@ import { IconButton } from './components/IconButton';
 import { Toast } from './components/Toast';
 import { Tooltip } from './components/Tooltip';
 import { SpreadsheetGrid } from './grid/SpreadsheetGrid';
+import { PictureGraph } from './picturegraph/PictureGraph';
 
 type DialogKind = 'activity' | 'help' | null;
 
@@ -124,6 +125,7 @@ export function App() {
       </nav>
 
       <SpreadsheetGrid />
+      <PictureGraph />
 
       {isSplashVisible ? (
         <section

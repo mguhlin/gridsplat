@@ -2,10 +2,19 @@ import {
   type ClipboardEvent,
   type KeyboardEvent,
   type PointerEvent,
+  type ChangeEvent,
   useMemo,
   useRef,
   useState,
 } from 'react';
+import { exportCsv, importCsv } from '../io/csv';
+import { downloadText } from '../io/download';
+import { exportNativeJson, importNativeJson } from '../io/json';
+import {
+  exportMarkdown,
+  importMarkdown,
+  markdownToMatrix,
+} from '../io/markdown';
 import {
   createSheet,
   getColumnName,
@@ -53,6 +62,7 @@ function buildOffsets(sizes: number[]): number[] {
 
 export function SpreadsheetGrid() {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [sheet, setSheet] = useState<SheetData>(() =>
     createSheet(DEFAULT_ROWS, DEFAULT_COLS),
   );
@@ -73,6 +83,7 @@ export function SpreadsheetGrid() {
   );
   const [scrollPosition, setScrollPosition] = useState({ top: 0, left: 0 });
   const [viewportSize, setViewportSize] = useState({ width: 900, height: 620 });
+  const [fileMessage, setFileMessage] = useState('');
 
   const totalWidth = useMemo(
     () => HEADER_SIZE + colWidths.reduce((sum, width) => sum + width, 0),
@@ -253,14 +264,78 @@ export function SpreadsheetGrid() {
 
     event.preventDefault();
 
-    setSheet((currentSheet) => {
-      remember(currentSheet);
-      return pasteCells(
-        currentSheet,
-        selection.start,
-        parsePastedText(pastedText),
+    try {
+      const values =
+        pastedText.includes('|') && pastedText.includes('---')
+          ? markdownToMatrix(pastedText)
+          : parsePastedText(pastedText);
+
+      setSheet((currentSheet) => {
+        remember(currentSheet);
+        setFileMessage('Pasted table into the sheet.');
+
+        return pasteCells(currentSheet, selection.start, values);
+      });
+    } catch (error) {
+      setFileMessage(
+        error instanceof Error
+          ? `We couldn't paste that table: ${error.message}`
+          : "We couldn't paste that table.",
       );
-    });
+    }
+  }
+
+  function exportFile(format: 'json' | 'csv' | 'markdown') {
+    if (format === 'json') {
+      downloadText(
+        'easysheet.easysheet.json',
+        exportNativeJson(sheet),
+        'application/json',
+      );
+      setFileMessage('Downloaded an EasySheet JSON file.');
+    }
+
+    if (format === 'csv') {
+      downloadText('easysheet.csv', exportCsv(sheet), 'text/csv');
+      setFileMessage('Downloaded a CSV file.');
+    }
+
+    if (format === 'markdown') {
+      downloadText('easysheet.md', exportMarkdown(sheet), 'text/markdown');
+      setFileMessage('Downloaded a Markdown table.');
+    }
+  }
+
+  async function importFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const nextSheet =
+        file.name.endsWith('.easysheet.json') || file.name.endsWith('.json')
+          ? importNativeJson(text)
+          : file.name.endsWith('.md') || file.name.endsWith('.markdown')
+            ? importMarkdown(text)
+            : importCsv(text);
+
+      remember(sheet);
+      setSheet(nextSheet);
+      setSelection(createSelection({ row: 0, col: 0 }));
+      setEditingCell(null);
+      setFileMessage(`Opened ${file.name}.`);
+    } catch (error) {
+      setFileMessage(
+        error instanceof Error
+          ? `We couldn't read that file: ${error.message}`
+          : "We couldn't read that file.",
+      );
+    } finally {
+      event.target.value = '';
+    }
   }
 
   function handleScroll() {
@@ -332,6 +407,41 @@ export function SpreadsheetGrid() {
         >
           Undo
         </button>
+        <button
+          className="big-action"
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Import
+        </button>
+        <input
+          ref={fileInputRef}
+          className="visually-hidden"
+          type="file"
+          accept=".csv,.json,.easysheet.json,.md,.markdown,text/csv,application/json,text/markdown"
+          onChange={importFile}
+        />
+        <button
+          className="big-action secondary"
+          type="button"
+          onClick={() => exportFile('json')}
+        >
+          JSON
+        </button>
+        <button
+          className="big-action secondary"
+          type="button"
+          onClick={() => exportFile('csv')}
+        >
+          CSV
+        </button>
+        <button
+          className="big-action secondary"
+          type="button"
+          onClick={() => exportFile('markdown')}
+        >
+          Markdown
+        </button>
         <label className="header-toggle">
           <input
             type="checkbox"
@@ -343,6 +453,9 @@ export function SpreadsheetGrid() {
         <p aria-live="polite" className="selection-readout">
           Cell {getColumnName(selection.end.col)}
           {selection.end.row + 1}
+        </p>
+        <p aria-live="polite" className="file-message">
+          {fileMessage}
         </p>
       </div>
       <div

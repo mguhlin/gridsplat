@@ -26,3 +26,12 @@ This keeps the grid child-centered and avoids adapting an adult-oriented commerc
 The build plan identifies HyperFormula as MIT, but the current `hyperformula@3.3.0` package publishes as `GPL-3.0-only`. EasySheet uses HyperFormula because the plan explicitly requires it and because re-implementing formula parsing is out of scope.
 
 Before a public release, decide whether GPL licensing is acceptable for EasySheet, whether to buy a commercial HyperFormula license, or whether to replace the formula engine. The first integration also raises the production JavaScript bundle above Vite's default 500 kB warning threshold, so later modules should consider code-splitting the formula engine if startup size becomes a problem.
+
+## 0004. Defer Excel Support
+
+- Status: Accepted
+- Date: 2026-06-07
+
+The build plan originally required SheetJS (`xlsx`) for Excel import/export. The current npm package `xlsx@0.18.5` reports high-severity advisories for prototype pollution and ReDoS, with no npm fix available.
+
+EasySheet will skip Excel support for now and ship native JSON, CSV, and Markdown import/export first. Before adding Excel support, choose a maintained parser or a supported SheetJS distribution with fixes.

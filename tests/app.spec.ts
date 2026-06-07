@@ -169,3 +169,36 @@ test('calculates formulas live and shows friendly errors', async ({
     "You can't divide by zero. Check your numbers.",
   );
 });
+
+test('imports CSV and pastes Markdown tables', async ({ page }, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Import flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+
+  await page.locator('input[type="file"]').setInputFiles({
+    name: 'fruit.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from('Name,Count\nApples,4\nBananas,6'),
+  });
+
+  await expect(page.getByTestId('cell-A1')).toContainText('Name');
+  await expect(page.getByTestId('cell-B3')).toContainText('6');
+  await expect(page.getByText('Opened fruit.csv.')).toBeVisible();
+
+  await page.getByTestId('cell-C1').click();
+  await page.getByLabel('Edit cell C1').press('Escape');
+  await page.locator('[role="grid"]').focus();
+  await page.evaluate(() =>
+    navigator.clipboard.writeText(
+      '| Item | Count |\n| --- | --- |\n| Pears | 5 |',
+    ),
+  );
+  await page.keyboard.press('ControlOrMeta+V');
+
+  await expect(page.getByTestId('cell-C1')).toContainText('Item');
+  await expect(page.getByTestId('cell-D2')).toContainText('5');
+  await expect(page.getByText('Pasted table into the sheet.')).toBeVisible();
+});

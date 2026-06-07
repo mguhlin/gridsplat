@@ -376,6 +376,15 @@ h1 {
   cursor: pointer;
 }
 
+.big-action.secondary {
+  color: var(--color-primary-dark);
+  background: var(--color-surface);
+}
+
+.big-action.secondary:hover {
+  background: var(--color-header);
+}
+
 .big-action:disabled {
   border-color: #9aa8b9;
   color: #405065;
@@ -404,6 +413,26 @@ h1 {
   border-radius: var(--radius-2);
   background: var(--color-surface);
   font-weight: 800;
+}
+
+.file-message {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  max-width: min(480px, 100%);
+  margin: 0;
+  color: var(--color-muted);
+  font-weight: 800;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
 }
 
 .sheet-scroller {

@@ -1,8 +1,59 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 test.beforeEach(async ({ context, page }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
+});
+
+async function dismissSplash(page: Page) {
+  await page.getByRole('button', { name: 'New Sheet' }).click();
+  await expect(page.getByRole('dialog', { name: 'EasySheet' })).toBeHidden();
+}
+
+test('shows the welcome splash and opens toolbar help by keyboard', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Shell flow runs in Chromium.',
+  );
+
+  await expect(page.getByRole('dialog', { name: 'EasySheet' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New Sheet' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open a File' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Try an Activity' }),
+  ).toBeVisible();
+
+  await dismissSplash(page);
+  await expect(page.getByText('New sheet ready.')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Help' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('menu', { name: 'Help menu' })).toBeVisible();
+  await page.getByRole('menuitem', { name: 'Quick help' }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'EasySheet Help' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Close dialog' }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'EasySheet Help' }),
+  ).toBeHidden();
+});
+
+test('opens activity dialog from the splash on touch', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'mobile-chrome',
+    'Splash touch flow runs in mobile Chrome.',
+  );
+
+  await page.getByRole('button', { name: 'Try an Activity' }).tap();
+  await expect(
+    page.getByRole('dialog', { name: 'Try an Activity' }),
+  ).toBeVisible();
+  await expect(page.getByText('Class Survey')).toBeVisible();
 });
 
 test('enters data, selects a range, copies, pastes, and undoes on desktop', async ({
@@ -13,7 +64,10 @@ test('enters data, selects a range, copies, pastes, and undoes on desktop', asyn
     'Desktop flow runs in Chromium.',
   );
 
-  await expect(page.getByRole('heading', { name: 'EasySheet' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'EasySheet' }),
+  ).toBeVisible();
+  await dismissSplash(page);
 
   await page.getByTestId('cell-A1').click();
   await page.getByLabel('Edit cell A1').fill('5');
@@ -65,6 +119,7 @@ test('opens a roomy editor from a mobile tap', async ({ page }, testInfo) => {
     'Mobile tap flow runs in mobile Chrome.',
   );
 
+  await dismissSplash(page);
   await page.getByTestId('cell-A1').tap();
 
   const editor = page.getByLabel('Edit cell A1');
@@ -85,6 +140,7 @@ test('calculates formulas live and shows friendly errors', async ({
     'Formula flow runs in Chromium.',
   );
 
+  await dismissSplash(page);
   await page.getByTestId('cell-A1').click();
   await page.getByLabel('Edit cell A1').fill('5');
   await page.getByLabel('Edit cell A1').press('Enter');

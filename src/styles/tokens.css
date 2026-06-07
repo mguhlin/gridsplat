@@ -2,11 +2,15 @@
   color-scheme: light;
   --color-page: #f7fbff;
   --color-surface: #ffffff;
+  --color-surface-strong: #fff9df;
   --color-text: #172033;
   --color-muted: #53627a;
   --color-primary: #0757a8;
   --color-primary-dark: #053f7a;
+  --color-secondary: #2f6f4f;
+  --color-secondary-dark: #17442f;
   --color-accent: #f2c94c;
+  --color-accent-dark: #8a6500;
   --color-selected: #ffcf33;
   --color-border: #b8cee8;
   --color-grid-border: #9fb9d7;
@@ -18,6 +22,7 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --space-10: 2.5rem;
+  --space-12: 3rem;
   --radius-2: 0.5rem;
   --radius-3: 0.75rem;
   --font-body:

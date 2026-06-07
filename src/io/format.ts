@@ -1,10 +1,10 @@
 import type { SheetData } from '../grid/types';
 import { matrixToSheet, sheetToMatrix, type SheetMatrix } from './matrix';
 
-export const EASY_SHEET_FILE_VERSION = 1;
+export const GRID_SPLAT_FILE_VERSION = 1;
 
-export interface EasySheetFile {
-  version: typeof EASY_SHEET_FILE_VERSION;
+export interface GridSplatFile {
+  version: typeof GRID_SPLAT_FILE_VERSION;
   metadata: {
     createdAt: string;
     title: string;
@@ -20,12 +20,12 @@ export interface EasySheetFile {
   pictureGraphs: unknown[];
 }
 
-export function createNativeFile(sheet: SheetData): EasySheetFile {
+export function createNativeFile(sheet: SheetData): GridSplatFile {
   return {
-    version: EASY_SHEET_FILE_VERSION,
+    version: GRID_SPLAT_FILE_VERSION,
     metadata: {
       createdAt: new Date().toISOString(),
-      title: 'EasySheet',
+      title: 'GridSplat',
     },
     sheets: [
       {
@@ -39,7 +39,7 @@ export function createNativeFile(sheet: SheetData): EasySheetFile {
   };
 }
 
-export function sheetFromNativeFile(file: EasySheetFile): SheetData {
+export function sheetFromNativeFile(file: GridSplatFile): SheetData {
   validateNativeFile(file);
 
   return matrixToSheet(file.sheets[0].cells);
@@ -47,9 +47,9 @@ export function sheetFromNativeFile(file: EasySheetFile): SheetData {
 
 export function validateNativeFile(
   value: unknown,
-): asserts value is EasySheetFile {
+): asserts value is GridSplatFile {
   if (!value || typeof value !== 'object') {
-    throw new Error('The file is not a readable EasySheet file.');
+    throw new Error('The file is not a readable GridSplat file.');
   }
 
   const candidate = value as {
@@ -57,21 +57,21 @@ export function validateNativeFile(
     version?: unknown;
   };
 
-  if (candidate.version !== EASY_SHEET_FILE_VERSION) {
+  if (candidate.version !== GRID_SPLAT_FILE_VERSION) {
     throw new Error(
-      'This EasySheet file uses a version this app cannot open yet.',
+      'This GridSplat file uses a version this app cannot open yet.',
     );
   }
 
   if (!Array.isArray(candidate.sheets) || candidate.sheets.length === 0) {
-    throw new Error('This EasySheet file does not contain a sheet.');
+    throw new Error('This GridSplat file does not contain a sheet.');
   }
 
   const firstSheet = candidate.sheets[0] as { cells?: unknown } | undefined;
 
   if (!firstSheet || !Array.isArray(firstSheet.cells)) {
     throw new Error(
-      'This EasySheet file has sheet data EasySheet cannot read.',
+      'This GridSplat file has sheet data GridSplat cannot read.',
     );
   }
 }

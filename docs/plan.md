@@ -1,4 +1,4 @@
-# EasySheet — Modular Build Plan
+# GridSplat — Modular Build Plan
 
 A child-centered, browser-based spreadsheet, charting, and graphing tool for grades 3–8.
 
@@ -10,9 +10,9 @@ A child-centered, browser-based spreadsheet, charting, and graphing tool for gra
 
 ## 0. Read This First (Plain-Language Summary)
 
-EasySheet is a website. A child opens it in any browser — laptop, Chromebook, tablet, or phone — and gets a big, colorful, friendly spreadsheet. They can type numbers, make charts, drag pictures to build picture graphs, and save their work to their device or to Google Drive, Dropbox, or OneDrive. Teachers get extra tools: ready-made activities, project ideas, and a presentation mode for the whiteboard. Everything runs in the browser. There is no server doing the math — the child's device does all the work. That keeps it private, cheap to host, and fast.
+GridSplat is a website. A child opens it in any browser — laptop, Chromebook, tablet, or phone — and gets a big, colorful, friendly spreadsheet. They can type numbers, make charts, drag pictures to build picture graphs, and save their work to their device or to Google Drive, Dropbox, or OneDrive. Teachers get extra tools: ready-made activities, project ideas, and a presentation mode for the whiteboard. Everything runs in the browser. There is no server doing the math — the child's device does all the work. That keeps it private, cheap to host, and fast.
 
-**The single most important architectural decision:** EasySheet is a _static_ web app. It is just HTML, CSS, and JavaScript files sitting on a host (like GitHub Pages). There is no backend database, no login server, no place where student work is stored on the internet by default. Cloud saving is optional and goes directly from the child's browser to _their own_ Google/Dropbox/Microsoft account. This is the right choice for a school product: it is FERPA-friendly, free to host, and cannot leak data it never collects.
+**The single most important architectural decision:** GridSplat is a _static_ web app. It is just HTML, CSS, and JavaScript files sitting on a host (like GitHub Pages). There is no backend database, no login server, no place where student work is stored on the internet by default. Cloud saving is optional and goes directly from the child's browser to _their own_ Google/Dropbox/Microsoft account. This is the right choice for a school product: it is FERPA-friendly, free to host, and cannot leak data it never collects.
 
 ---
 
@@ -57,7 +57,7 @@ Pick boring, stable, well-documented tools. A child-facing education tool must w
 **Folder structure:**
 
 ```
-easysheet/
+gridsplat/
 ├── public/                 # static assets: splash images, icon SVGs, sample data
 │   ├── images/
 │   ├── icons/
@@ -84,7 +84,7 @@ easysheet/
 └── README.md
 ```
 
-**Acceptance criteria:** `npm run dev` shows a blank styled page that says "EasySheet." `npm run lint`, `npm test`, and `npm run build` all pass with no errors. CI runs green on GitHub.
+**Acceptance criteria:** `npm run dev` shows a blank styled page that says "GridSplat." `npm run lint`, `npm test`, and `npm run build` all pass with no errors. CI runs green on GitHub.
 
 **Definition of Done:** A reviewer can clone the repo, run three commands, and see it work.
 
@@ -237,14 +237,14 @@ easysheet/
 
 **Tasks:**
 
-1. **Local save/open:** Use the File System Access API where supported (lets users re-save to the same file). Fallback: download a `.easysheet.json` file / upload to open. Always provide the fallback — Safari and Firefox don't fully support the modern API.
+1. **Local save/open:** Use the File System Access API where supported (lets users re-save to the same file). Fallback: download a `.gridsplat.json` file / upload to open. Always provide the fallback — Safari and Firefox don't fully support the modern API.
 2. **Cloud save (OAuth 2.0 with PKCE, browser-only):**
    - Google Drive API
    - Dropbox JavaScript SDK
    - Microsoft Graph API (OneDrive)
    - Each gets its own adapter behind a shared `CloudProvider` interface (`io/cloud/`). The UI ("Save to…") doesn't know which cloud it's talking to — only the adapter does.
 3. Store API client IDs in environment variables, injected at build time. **No secrets in the code.** PKCE means no client _secret_ is needed (correct for static sites).
-4. Friendly auth flow: "Connect your Google Drive" with a clear, big button and a plain explanation of what access is granted ("EasySheet can only see files it creates").
+4. Friendly auth flow: "Connect your Google Drive" with a clear, big button and a plain explanation of what access is granted ("GridSplat can only see files it creates").
 5. Handle the offline case gracefully: if there's no internet, cloud buttons are disabled with a friendly note; local save still works.
 
 **Critical caveats to surface to the product owner (you said you don't code — read these):**

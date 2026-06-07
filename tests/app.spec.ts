@@ -7,7 +7,7 @@ test.beforeEach(async ({ context, page }) => {
 
 async function dismissSplash(page: Page) {
   await page.getByRole('button', { name: 'New Sheet' }).click();
-  await expect(page.getByRole('dialog', { name: 'EasySheet' })).toBeHidden();
+  await expect(page.getByRole('dialog', { name: 'GridSplat' })).toBeHidden();
 }
 
 test('shows the welcome splash and opens toolbar help by keyboard', async ({
@@ -18,7 +18,7 @@ test('shows the welcome splash and opens toolbar help by keyboard', async ({
     'Shell flow runs in Chromium.',
   );
 
-  await expect(page.getByRole('dialog', { name: 'EasySheet' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'GridSplat' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New Sheet' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Open a File' })).toBeVisible();
   await expect(
@@ -33,11 +33,11 @@ test('shows the welcome splash and opens toolbar help by keyboard', async ({
   await expect(page.getByRole('menu', { name: 'Help menu' })).toBeVisible();
   await page.getByRole('menuitem', { name: 'Quick help' }).click();
   await expect(
-    page.getByRole('dialog', { name: 'EasySheet Help' }),
+    page.getByRole('dialog', { name: 'GridSplat Help' }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Close dialog' }).click();
   await expect(
-    page.getByRole('dialog', { name: 'EasySheet Help' }),
+    page.getByRole('dialog', { name: 'GridSplat Help' }),
   ).toBeHidden();
 });
 
@@ -65,7 +65,7 @@ test('enters data, selects a range, copies, pastes, and undoes on desktop', asyn
   );
 
   await expect(
-    page.getByRole('heading', { level: 1, name: 'EasySheet' }),
+    page.getByRole('heading', { level: 1, name: 'GridSplat' }),
   ).toBeVisible();
   await dismissSplash(page);
 
@@ -257,7 +257,7 @@ test('creates a live-updating bar chart and exports PNG', async ({
   await page.getByRole('button', { name: 'Export Chart PNG' }).click();
   const download = await downloadPromise;
 
-  expect(download.suggestedFilename()).toBe('easysheet-chart.png');
+  expect(download.suggestedFilename()).toBe('gridsplat-chart.png');
 });
 
 test('updates and exports the picture graph', async ({ page }, testInfo) => {
@@ -268,6 +268,7 @@ test('updates and exports the picture graph', async ({ page }, testInfo) => {
 
   await dismissSplash(page);
   await page
+    .getByLabel('Favorite Fruit Pictograph')
     .getByRole('heading', { name: 'Favorite Fruit Pictograph' })
     .scrollIntoViewIfNeeded();
 
@@ -297,7 +298,7 @@ test('updates and exports the picture graph', async ({ page }, testInfo) => {
   await page.getByRole('button', { name: 'Export Picture PNG' }).click();
   const download = await downloadPromise;
 
-  expect(download.suggestedFilename()).toBe('easysheet-picture-graph.png');
+  expect(download.suggestedFilename()).toBe('gridsplat-picture-graph.png');
 });
 
 test('autosaves sheet data in the browser and shows cloud setup status', async ({
@@ -322,4 +323,30 @@ test('autosaves sheet data in the browser and shows cloud setup status', async (
 
   await page.getByRole('button', { name: 'Google Drive' }).click();
   await expect(page.getByText(/VITE_GOOGLE_DRIVE_CLIENT_ID/)).toBeVisible();
+});
+
+test('loads an activity dataset and toggles teacher notes', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Activities flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+  await page
+    .getByRole('heading', { name: 'Classroom Activities' })
+    .scrollIntoViewIfNeeded();
+
+  const activity = page.locator('.activity-card').filter({
+    hasText: 'Class Pet Survey Bar Graph',
+  });
+
+  await activity.getByRole('button', { name: 'Teacher Notes' }).click();
+  await expect(activity).toContainText('which pet category has the most');
+
+  await activity.getByRole('button', { name: 'Load Activity' }).click();
+  await expect(page.getByText('Loaded activity data.')).toBeVisible();
+  await expect(page.getByTestId('cell-A1')).toContainText('Pet');
+  await expect(page.getByTestId('cell-B2')).toContainText('8');
 });

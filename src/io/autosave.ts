@@ -1,7 +1,7 @@
 import type { SheetData } from '../grid/types';
 import { exportNativeJson, importNativeJson } from './json';
 
-const AUTOSAVE_KEY = 'easysheet.autosave.v1';
+const AUTOSAVE_KEY = 'gridsplat.autosave.v1';
 
 export function saveAutosave(sheet: SheetData, storage = window.localStorage) {
   storage.setItem(AUTOSAVE_KEY, exportNativeJson(sheet));

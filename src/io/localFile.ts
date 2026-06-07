@@ -27,12 +27,12 @@ export async function saveSheetLocally(sheet: SheetData): Promise<string> {
 
   if (picker) {
     const handle = await picker({
-      suggestedName: 'easysheet.easysheet.json',
+      suggestedName: 'gridsplat.gridsplat.json',
       types: [
         {
-          description: 'EasySheet file',
+          description: 'GridSplat file',
           accept: {
-            'application/json': ['.easysheet.json', '.json'],
+            'application/json': ['.gridsplat.json', '.json'],
           },
         },
       ],
@@ -45,7 +45,7 @@ export async function saveSheetLocally(sheet: SheetData): Promise<string> {
     return 'Saved to a local file.';
   }
 
-  downloadText('easysheet.easysheet.json', text, 'application/json');
+  downloadText('gridsplat.gridsplat.json', text, 'application/json');
 
-  return 'Downloaded an EasySheet file.';
+  return 'Downloaded a GridSplat file.';
 }

@@ -3,9 +3,9 @@ import { App } from './App';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 describe('App', () => {
-  it('renders the EasySheet heading', () => {
+  it('renders the GridSplat heading', () => {
     const markup = renderToStaticMarkup(<App />);
 
-    expect(markup).toContain('EasySheet');
+    expect(markup).toContain('GridSplat');
   });
 });

@@ -1,12 +1,16 @@
-# EasySheet
+# GridSplat
 
-EasySheet is a planned browser-based spreadsheet, charting, and graphing tool for grades 3-8.
+**GridSplat by DrawSplat** is a kid-friendly spreadsheet for sorting, graphing, and making sense of data.
+
+GridSplat is a browser-based spreadsheet, charting, and graphing tool for grades 3-8.
 
 The app is built with React, TypeScript, and Vite as a static web application so it can be hosted with GitHub Pages.
 
 ## Project Status
 
-Module 1, the project foundation, is in progress.
+Modules 1-10 are implemented: foundation, UI shell, grid, formulas, import/export, charts, picture graphs, save scaffolds, and built-in activities.
+
+Remaining plan modules: presentation mode, help/onboarding/privacy, and PWA/offline support.
 
 The modular build plan lives in [docs/plan.md](docs/plan.md).
 

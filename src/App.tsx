@@ -11,6 +11,7 @@ import {
 import { useState } from 'react';
 
 import { BigButton } from './components/BigButton';
+import { ActivitiesLibrary } from './activities/ActivitiesLibrary';
 import { Dialog } from './components/Dialog';
 import { DropdownMenu } from './components/DropdownMenu';
 import { IconButton } from './components/IconButton';
@@ -48,7 +49,7 @@ const toolbarMenus = [
   },
   {
     label: 'Help',
-    items: ['Quick help', 'Keyboard help', 'About EasySheet'],
+    items: ['Quick help', 'Keyboard help', 'About GridSplat'],
   },
 ];
 
@@ -63,7 +64,7 @@ export function App() {
   }
 
   function handleMenuAction(label: string) {
-    if (label === 'Quick help' || label === 'About EasySheet') {
+    if (label === 'Quick help' || label === 'About GridSplat') {
       setDialogKind('help');
       return;
     }
@@ -80,8 +81,12 @@ export function App() {
     <main className="app-shell" aria-labelledby="app-title">
       <header className="app-header">
         <div>
-          <p className="eyebrow">EasySheet</p>
-          <h1 id="app-title">EasySheet</h1>
+          <p className="eyebrow">GridSplat by DrawSplat</p>
+          <h1 id="app-title">GridSplat</h1>
+          <p className="intro">
+            A kid-friendly spreadsheet for sorting, graphing, and making sense
+            of data.
+          </p>
         </div>
         <div className="header-actions" aria-label="Quick actions">
           <Tooltip text="Start a new classroom sheet">
@@ -126,6 +131,7 @@ export function App() {
 
       <SpreadsheetGrid />
       <PictureGraph />
+      <ActivitiesLibrary />
 
       {isSplashVisible ? (
         <section
@@ -136,10 +142,10 @@ export function App() {
         >
           <div className="splash-panel">
             <p className="eyebrow">Welcome</p>
-            <h2 id="welcome-title">EasySheet</h2>
+            <h2 id="welcome-title">GridSplat</h2>
             <p className="splash-copy">
-              Big cells, bright controls, and simple tools for student data
-              work.
+              GridSplat by DrawSplat. A kid-friendly spreadsheet for sorting,
+              graphing, and making sense of data.
             </p>
             <div className="splash-actions">
               <BigButton
@@ -191,7 +197,7 @@ export function App() {
 
       <Dialog
         isOpen={dialogKind === 'help'}
-        title="EasySheet Help"
+        title="GridSplat Help"
         onClose={() => setDialogKind(null)}
       >
         <div className="help-list">

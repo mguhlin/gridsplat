@@ -77,6 +77,72 @@ export function PictureGraph() {
   const [scale, setScale] = useState(1);
   const [message, setMessage] = useState('');
 
+  function downloadPictureGraph(dataUrl: string) {
+    const anchor = document.createElement('a');
+
+    anchor.href = dataUrl;
+    anchor.download = 'gridsplat-picture-graph.png';
+    anchor.click();
+    setMessage('Downloaded a picture graph image.');
+  }
+
+  function createFallbackPng() {
+    const canvas = document.createElement('canvas');
+    const width = 960;
+    const height = 540;
+    const padding = 48;
+    const columnWidth = (width - padding * 2) / categories.length;
+    const maxPictures = Math.max(
+      ...categories.map((category) =>
+        scaledPictureCount(category.count, scale),
+      ),
+      1,
+    );
+    const chartTop = 92;
+    const chartHeight = 300;
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = width;
+    canvas.height = height;
+
+    if (!ctx) {
+      return canvas.toDataURL('image/png');
+    }
+
+    ctx.fillStyle = '#fff9e8';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#172033';
+    ctx.font = '700 34px sans-serif';
+    ctx.fillText('Favorite Fruit Pictograph', padding, 54);
+    ctx.font = '600 20px sans-serif';
+    ctx.fillText(`Each picture equals ${scale}`, padding, 84);
+
+    categories.forEach((category, columnIndex) => {
+      const centerX = padding + columnWidth * columnIndex + columnWidth / 2;
+      const pictureCount = scaledPictureCount(category.count, scale);
+      const symbolGap = chartHeight / Math.max(maxPictures, 1);
+
+      ctx.textAlign = 'center';
+      ctx.font = '34px sans-serif';
+
+      Array.from({ length: pictureCount }).forEach((_, pictureIndex) => {
+        ctx.fillText(
+          category.icon,
+          centerX,
+          chartTop + chartHeight - pictureIndex * symbolGap,
+        );
+      });
+
+      ctx.fillStyle = '#172033';
+      ctx.font = '700 22px sans-serif';
+      ctx.fillText(category.label, centerX, 460);
+      ctx.font = '600 18px sans-serif';
+      ctx.fillText(`${category.count} total`, centerX, 490);
+    });
+
+    return canvas.toDataURL('image/png');
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const targetId = event.over?.id;
 
@@ -92,15 +158,16 @@ export function PictureGraph() {
       return;
     }
 
-    const png = await toPng(graphRef.current, {
-      pixelRatio: 2,
-    });
-    const anchor = document.createElement('a');
+    const png = await Promise.race([
+      toPng(graphRef.current, {
+        pixelRatio: 2,
+      }).catch(() => createFallbackPng()),
+      new Promise<string>((resolve) =>
+        window.setTimeout(() => resolve(createFallbackPng()), 1500),
+      ),
+    ]);
 
-    anchor.href = png;
-    anchor.download = 'easysheet-picture-graph.png';
-    anchor.click();
-    setMessage('Downloaded a picture graph image.');
+    downloadPictureGraph(png);
   }
 
   return (

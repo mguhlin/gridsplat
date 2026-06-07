@@ -26,6 +26,7 @@ import {
   importMarkdown,
   markdownToMatrix,
 } from '../io/markdown';
+import { matrixToSheet, type SheetMatrix } from '../io/matrix';
 import {
   createSheet,
   getColumnName,
@@ -113,6 +114,22 @@ export function SpreadsheetGrid() {
     }, 700);
 
     return () => window.clearTimeout(timeoutId);
+  }, [sheet]);
+
+  useEffect(() => {
+    function loadMatrix(event: Event) {
+      const matrix = (event as CustomEvent<SheetMatrix>).detail;
+
+      remember(sheet);
+      setSheet(matrixToSheet(matrix));
+      setSelection(createSelection({ row: 0, col: 0 }));
+      setFileMessage('Loaded activity data.');
+    }
+
+    window.addEventListener('gridsplat:load-matrix', loadMatrix);
+
+    return () =>
+      window.removeEventListener('gridsplat:load-matrix', loadMatrix);
   }, [sheet]);
 
   const totalWidth = useMemo(
@@ -318,20 +335,20 @@ export function SpreadsheetGrid() {
   function exportFile(format: 'json' | 'csv' | 'markdown') {
     if (format === 'json') {
       downloadText(
-        'easysheet.easysheet.json',
+        'gridsplat.gridsplat.json',
         exportNativeJson(sheet),
         'application/json',
       );
-      setFileMessage('Downloaded an EasySheet JSON file.');
+      setFileMessage('Downloaded a GridSplat JSON file.');
     }
 
     if (format === 'csv') {
-      downloadText('easysheet.csv', exportCsv(sheet), 'text/csv');
+      downloadText('gridsplat.csv', exportCsv(sheet), 'text/csv');
       setFileMessage('Downloaded a CSV file.');
     }
 
     if (format === 'markdown') {
-      downloadText('easysheet.md', exportMarkdown(sheet), 'text/markdown');
+      downloadText('gridsplat.md', exportMarkdown(sheet), 'text/markdown');
       setFileMessage('Downloaded a Markdown table.');
     }
   }
@@ -346,7 +363,7 @@ export function SpreadsheetGrid() {
     try {
       const text = await file.text();
       const nextSheet =
-        file.name.endsWith('.easysheet.json') || file.name.endsWith('.json')
+        file.name.endsWith('.gridsplat.json') || file.name.endsWith('.json')
           ? importNativeJson(text)
           : file.name.endsWith('.md') || file.name.endsWith('.markdown')
             ? importMarkdown(text)
@@ -430,7 +447,7 @@ export function SpreadsheetGrid() {
     const anchor = document.createElement('a');
 
     anchor.href = canvas.toDataURL('image/png');
-    anchor.download = 'easysheet-chart.png';
+    anchor.download = 'gridsplat-chart.png';
     anchor.click();
     setFileMessage('Downloaded a chart image.');
   }
@@ -515,7 +532,7 @@ export function SpreadsheetGrid() {
           ref={fileInputRef}
           className="visually-hidden"
           type="file"
-          accept=".csv,.json,.easysheet.json,.md,.markdown,text/csv,application/json,text/markdown"
+          accept=".csv,.json,.gridsplat.json,.md,.markdown,text/csv,application/json,text/markdown"
           onChange={importFile}
         />
         <button
@@ -601,7 +618,7 @@ export function SpreadsheetGrid() {
         ref={scrollerRef}
         className="sheet-scroller"
         role="grid"
-        aria-label="EasySheet grid"
+        aria-label="GridSplat grid"
         aria-rowcount={DEFAULT_ROWS}
         aria-colcount={DEFAULT_COLS}
         tabIndex={0}

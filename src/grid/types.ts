@@ -4,6 +4,7 @@ export interface SheetCell {
   rawValue: string;
   displayValue: string;
   type: CellType;
+  errorType?: string;
 }
 
 export interface CellAddress {

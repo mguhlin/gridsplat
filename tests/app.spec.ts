@@ -76,3 +76,40 @@ test('opens a roomy editor from a mobile tap', async ({ page }, testInfo) => {
 
   await expect(page.getByTestId('cell-A1')).toContainText('7');
 });
+
+test('calculates formulas live and shows friendly errors', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Formula flow runs in Chromium.',
+  );
+
+  await page.getByTestId('cell-A1').click();
+  await page.getByLabel('Edit cell A1').fill('5');
+  await page.getByLabel('Edit cell A1').press('Enter');
+
+  await page.getByTestId('cell-A2').click();
+  await page.getByLabel('Edit cell A2').fill('6');
+  await page.getByLabel('Edit cell A2').press('Enter');
+
+  await page.getByTestId('cell-B1').click();
+  await page.getByLabel('Edit cell B1').fill('=SUM(A1:A2)');
+  await page.getByLabel('Edit cell B1').press('Enter');
+
+  await expect(page.getByTestId('cell-B1')).toContainText('11');
+
+  await page.getByTestId('cell-A1').click();
+  await page.getByLabel('Edit cell A1').fill('7');
+  await page.getByLabel('Edit cell A1').press('Enter');
+
+  await expect(page.getByTestId('cell-B1')).toContainText('13');
+
+  await page.getByTestId('cell-C1').click();
+  await page.getByLabel('Edit cell C1').fill('=1/0');
+  await page.getByLabel('Edit cell C1').press('Enter');
+
+  await expect(page.getByTestId('cell-C1')).toContainText(
+    "You can't divide by zero. Check your numbers.",
+  );
+});

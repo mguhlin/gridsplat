@@ -48,4 +48,18 @@ describe('gridModel', () => {
     expect(getColumnName(25)).toBe('Z');
     expect(getColumnName(26)).toBe('AA');
   });
+
+  it('recalculates formulas after referenced cells change', () => {
+    let sheet = createSheet(4, 4);
+
+    sheet = updateCell(sheet, { row: 0, col: 0 }, '5');
+    sheet = updateCell(sheet, { row: 1, col: 0 }, '6');
+    sheet = updateCell(sheet, { row: 0, col: 1 }, '=SUM(A1:A2)');
+
+    expect(sheet[0][1].displayValue).toBe('11');
+
+    sheet = updateCell(sheet, { row: 0, col: 0 }, '7');
+
+    expect(sheet[0][1].displayValue).toBe('13');
+  });
 });

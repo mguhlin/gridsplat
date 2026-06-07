@@ -473,7 +473,13 @@ export function SpreadsheetGrid() {
                       }}
                     />
                   ) : (
-                    <span className={`cell-value ${cell.type}`}>
+                    <span
+                      className={
+                        cell.errorType
+                          ? `cell-value ${cell.type} error`
+                          : `cell-value ${cell.type}`
+                      }
+                    >
                       {cell.displayValue}
                     </span>
                   )}

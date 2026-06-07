@@ -4,6 +4,7 @@ import type {
   SheetCell,
   SheetData,
 } from './types';
+import { recalculateSheet } from '../formulas/engine';
 
 const BLANK_CELL: SheetCell = {
   rawValue: '',
@@ -12,8 +13,10 @@ const BLANK_CELL: SheetCell = {
 };
 
 export function createSheet(rows: number, cols: number): SheetData {
-  return Array.from({ length: rows }, () =>
-    Array.from({ length: cols }, () => ({ ...BLANK_CELL })),
+  return recalculateSheet(
+    Array.from({ length: rows }, () =>
+      Array.from({ length: cols }, () => ({ ...BLANK_CELL })),
+    ),
   );
 }
 
@@ -54,11 +57,13 @@ export function updateCell(
   address: CellAddress,
   rawValue: string,
 ): SheetData {
-  return sheet.map((row, rowIndex) =>
-    row.map((cell, colIndex) =>
-      rowIndex === address.row && colIndex === address.col
-        ? createCell(rawValue)
-        : cell,
+  return recalculateSheet(
+    sheet.map((row, rowIndex) =>
+      row.map((cell, colIndex) =>
+        rowIndex === address.row && colIndex === address.col
+          ? createCell(rawValue)
+          : cell,
+      ),
     ),
   );
 }
@@ -68,14 +73,16 @@ export function pasteCells(
   start: CellAddress,
   values: string[][],
 ): SheetData {
-  return sheet.map((row, rowIndex) =>
-    row.map((cell, colIndex) => {
-      const pastedRow = rowIndex - start.row;
-      const pastedCol = colIndex - start.col;
-      const pastedValue = values[pastedRow]?.[pastedCol];
+  return recalculateSheet(
+    sheet.map((row, rowIndex) =>
+      row.map((cell, colIndex) => {
+        const pastedRow = rowIndex - start.row;
+        const pastedCol = colIndex - start.col;
+        const pastedValue = values[pastedRow]?.[pastedCol];
 
-      return pastedValue === undefined ? cell : createCell(pastedValue);
-    }),
+        return pastedValue === undefined ? cell : createCell(pastedValue);
+      }),
+    ),
   );
 }
 

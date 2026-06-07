@@ -27,6 +27,7 @@ import {
   markdownToMatrix,
 } from '../io/markdown';
 import { matrixToSheet, type SheetMatrix } from '../io/matrix';
+import { strings } from '../i18n/strings';
 import {
   createSheet,
   getColumnName,
@@ -44,6 +45,8 @@ const DEFAULT_ROW_HEIGHT = 56;
 const DEFAULT_COL_WIDTH = 120;
 const HEADER_SIZE = 48;
 const OVERSCAN = 4;
+
+type NumberFormat = 'plain' | 'whole' | 'decimal' | 'currency' | 'percent';
 
 interface ResizeState {
   type: 'row' | 'col';
@@ -101,6 +104,7 @@ export function SpreadsheetGrid() {
   const [viewportSize, setViewportSize] = useState({ width: 900, height: 620 });
   const [fileMessage, setFileMessage] = useState('');
   const [chart, setChart] = useState<ChartDataModel | null>(null);
+  const [numberFormat, setNumberFormat] = useState<NumberFormat>('plain');
   const [chartSelection, setChartSelection] = useState<SelectionRange | null>(
     null,
   );
@@ -510,6 +514,53 @@ export function SpreadsheetGrid() {
     setResizeState(null);
   }
 
+  function resetSheet() {
+    if (!window.confirm(strings.startOverConfirm)) {
+      return;
+    }
+
+    remember(sheet);
+    setSheet(createSheet(DEFAULT_ROWS, DEFAULT_COLS));
+    setSelection(createSelection({ row: 0, col: 0 }));
+    setEditingCell(null);
+    setChart(null);
+    setFileMessage('Started over with a blank sheet.');
+  }
+
+  function formatDisplayValue(value: string): string {
+    if (numberFormat === 'plain' || value.trim() === '') {
+      return value;
+    }
+
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+      return value;
+    }
+
+    if (numberFormat === 'whole') {
+      return Math.round(numericValue).toLocaleString();
+    }
+
+    if (numberFormat === 'decimal') {
+      return numericValue.toLocaleString(undefined, {
+        maximumFractionDigits: 2,
+        minimumFractionDigits: 2,
+      });
+    }
+
+    if (numberFormat === 'currency') {
+      return numericValue.toLocaleString(undefined, {
+        currency: 'USD',
+        style: 'currency',
+      });
+    }
+
+    return `${(numericValue * 100).toLocaleString(undefined, {
+      maximumFractionDigits: 1,
+    })}%`;
+  }
+
   return (
     <section className="sheet-workspace" aria-label="Spreadsheet workspace">
       <div className="sheet-toolbar" aria-label="Sheet tools">
@@ -559,6 +610,13 @@ export function SpreadsheetGrid() {
         <button className="big-action" type="button" onClick={saveLocalFile}>
           Save File
         </button>
+        <button
+          className="big-action secondary"
+          type="button"
+          onClick={resetSheet}
+        >
+          Start Over
+        </button>
         {cloudProviders.map((provider) => (
           <button
             className="big-action secondary"
@@ -577,6 +635,21 @@ export function SpreadsheetGrid() {
             onChange={(event) => setIsPlainHeaders(event.target.checked)}
           />
           Plain headers
+        </label>
+        <label className="format-control">
+          Number format
+          <select
+            value={numberFormat}
+            onChange={(event) =>
+              setNumberFormat(event.target.value as NumberFormat)
+            }
+          >
+            <option value="plain">Plain</option>
+            <option value="whole">Whole numbers</option>
+            <option value="decimal">Decimals</option>
+            <option value="currency">Currency</option>
+            <option value="percent">Percent</option>
+          </select>
         </label>
         <p aria-live="polite" className="selection-readout">
           Cell {getColumnName(selection.end.col)}
@@ -749,7 +822,7 @@ export function SpreadsheetGrid() {
                           : `cell-value ${cell.type}`
                       }
                     >
-                      {cell.displayValue}
+                      {formatDisplayValue(cell.displayValue)}
                     </span>
                   )}
                 </div>

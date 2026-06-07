@@ -283,10 +283,11 @@ gridsplat/
 3. Build a **Project Ideas** section: longer, open-ended prompts ("Track the weather for a week and make a graph," "Survey your class and present your findings").
 4. Each activity loads its sample data into a fresh sheet with one tap.
 5. A small "Teacher Notes" panel per activity (collapsed by default) with the standard, the goal, and discussion questions.
+6. Add a **Templates Library** with common everyday sheets for grades 3–8 plus teacher/student financial-literacy sheets such as allowance tracking, a check register, classroom store budgets, a simple gradebook, reading logs, homework planners, observation logs, and attendance.
 
 **Important honesty note for the product owner:** TEKS codes change over time and exact wording matters for school adoption. The plan will _structure_ the alignment, but a Texas educator (you) must verify the codes against the current official TEKS before publishing. The agent should not present invented or approximate codes as official.
 
-**Acceptance criteria:** At least 7 activities load with sample data and correct (verified) TEKS tags. Project ideas display. Teacher notes toggle.
+**Acceptance criteria:** At least 7 activities load with sample data and correct (verified) TEKS tags. At least 8 everyday/financial-literacy/teacher templates load with one tap. Project ideas display. Teacher notes toggle.
 
 **Definition of Done:** Activities render, load data, and show alignment; `teks.json` is documented with its source.
 
@@ -391,18 +392,18 @@ The agent must follow these throughout. The product owner can use this section t
 
 Build in this order. Do not skip ahead. Commit and run CI after each.
 
-1. ☐ **Module 1** — Foundation, tooling, CI, folder structure, error boundary.
-2. ☐ **Module 5** — Design system + UI shell + i18n string table + splash. _(Built early so later modules have buttons/menus to use.)_
-3. ☐ **Module 3** — The grid (hardest; budget the most time).
-4. ☐ **Module 4** — Formula engine (HyperFormula wrapper).
-5. ☐ **Module 8** — Import/export + versioned JSON file format + Markdown both directions.
-6. ☐ **Module 6** — Charts.
-7. ☐ **Module 7** — Picture graphs (signature feature).
-8. ☐ **Module 9** — Local save + browser-storage autosave + cloud adapters.
-9. ☐ **Module 10** — Activities, projects, TEKS data (codes verified by a human).
-10. ☐ **Module 11** — Presentation mode.
-11. ☐ **Module 12** — Help, onboarding, privacy note.
-12. ☐ **Module 14** — PWA / offline support + print stylesheet + device support matrix.
+1. ☑ **Module 1** — Foundation, tooling, CI, folder structure, error boundary.
+2. ☑ **Module 5** — Design system + UI shell + i18n string table + splash. _(Built early so later modules have buttons/menus to use.)_
+3. ☑ **Module 3** — The grid (hardest; budget the most time).
+4. ☑ **Module 4** — Formula engine (HyperFormula wrapper).
+5. ☐ **Module 8** — Import/export + versioned JSON file format + Markdown both directions. CSV, JSON, Markdown, clipboard paste, and PNG exports are complete; Excel import/export is intentionally deferred.
+6. ☑ **Module 6** — Charts.
+7. ☑ **Module 7** — Picture graphs (signature feature).
+8. ☐ **Module 9** — Local save + browser-storage autosave + cloud adapters. Local save, autosave, offline handling, and provider scaffolds are complete; cloud save end-to-end is intentionally deferred.
+9. ☑ **Module 10** — Activities, projects, TEKS data (codes verified by a human) + everyday and financial-literacy templates.
+10. ☑ **Module 11** — Presentation mode.
+11. ☑ **Module 12** — Help, onboarding, privacy note.
+12. ☑ **Module 14** — PWA / offline support + print stylesheet + device support matrix.
 13. ☐ Final pass: full e2e test suite, accessibility audit, low-end-device check, deploy to GitHub Pages.
 
 **For token management:** Each numbered module is a safe stopping point. Finish a module, commit, run its acceptance test, then start the next in a fresh context. Carry forward only: this plan, `docs/decisions.md`, and the file-format/schema doc.

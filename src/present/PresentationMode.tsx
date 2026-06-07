@@ -1,4 +1,11 @@
-import { ChevronLeft, ChevronRight, MonitorUp, Plus } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Maximize2,
+  MonitorUp,
+  Plus,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 type SlideKind = 'sheet' | 'chart' | 'picture';
@@ -38,6 +45,7 @@ export function PresentationMode() {
   const [slides, setSlides] = useState(defaultSlides);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPresenting, setIsPresenting] = useState(false);
+  const [isSpotlight, setIsSpotlight] = useState(false);
 
   const activeSlide = slides[activeIndex] ?? slides[0];
 
@@ -84,6 +92,32 @@ export function PresentationMode() {
     setActiveIndex((current) => Math.max(current - 1, 0));
   }
 
+  function moveSlide(index: number, direction: -1 | 1) {
+    const nextIndex = index + direction;
+
+    if (nextIndex < 0 || nextIndex >= slides.length) {
+      return;
+    }
+
+    setSlides((current) => {
+      const nextSlides = [...current];
+      const [slide] = nextSlides.splice(index, 1);
+
+      if (!slide) {
+        return current;
+      }
+
+      nextSlides.splice(nextIndex, 0, slide);
+
+      return nextSlides;
+    });
+    setActiveIndex(nextIndex);
+  }
+
+  function exportPrintablePresentation() {
+    window.print();
+  }
+
   return (
     <section className="presentation-workspace" aria-labelledby="present-title">
       <header className="module-header">
@@ -91,14 +125,32 @@ export function PresentationMode() {
           <p className="eyebrow">Presentation Mode</p>
           <h2 id="present-title">Whiteboard Slides</h2>
         </div>
-        <button
-          className="big-action"
-          type="button"
-          onClick={() => setIsPresenting(true)}
-        >
-          <MonitorUp aria-hidden="true" size={20} />
-          Start Presentation
-        </button>
+        <div className="presentation-actions">
+          <button
+            className="big-action secondary"
+            type="button"
+            onClick={() => setIsSpotlight((current) => !current)}
+          >
+            <Maximize2 aria-hidden="true" size={20} />
+            Spotlight
+          </button>
+          <button
+            className="big-action secondary"
+            type="button"
+            onClick={exportPrintablePresentation}
+          >
+            <Download aria-hidden="true" size={20} />
+            Print Slides
+          </button>
+          <button
+            className="big-action"
+            type="button"
+            onClick={() => setIsPresenting(true)}
+          >
+            <MonitorUp aria-hidden="true" size={20} />
+            Start Presentation
+          </button>
+        </div>
       </header>
 
       <div className="slide-builder" aria-label="Slide builder">
@@ -131,18 +183,40 @@ export function PresentationMode() {
       <ol className="slide-list" aria-label="Presentation slides">
         {slides.map((slide, index) => (
           <li key={slide.id}>
-            <button
-              aria-current={index === activeIndex ? 'step' : undefined}
+            <article
               className={
                 index === activeIndex ? 'slide-card active' : 'slide-card'
               }
-              type="button"
-              onClick={() => setActiveIndex(index)}
             >
-              <span>Slide {index + 1}</span>
-              <strong>{slide.title}</strong>
-              <small>{slide.body}</small>
-            </button>
+              <button
+                aria-current={index === activeIndex ? 'step' : undefined}
+                className="slide-select"
+                type="button"
+                onClick={() => setActiveIndex(index)}
+              >
+                <span>Slide {index + 1}</span>
+                <strong>{slide.title}</strong>
+                <small>{slide.body}</small>
+              </button>
+              <div className="slide-card-actions">
+                <button
+                  className="big-action secondary"
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() => moveSlide(index, -1)}
+                >
+                  Move Up
+                </button>
+                <button
+                  className="big-action secondary"
+                  type="button"
+                  disabled={index === slides.length - 1}
+                  onClick={() => moveSlide(index, 1)}
+                >
+                  Move Down
+                </button>
+              </div>
+            </article>
           </li>
         ))}
       </ol>
@@ -162,7 +236,11 @@ export function PresentationMode() {
           >
             <ChevronLeft aria-hidden="true" size={34} />
           </button>
-          <article className={`viewer-slide ${activeSlide.kind}`}>
+          <article
+            className={`viewer-slide ${activeSlide.kind}${
+              isSpotlight ? ' spotlight' : ''
+            }`}
+          >
             <p>Slide {activeIndex + 1}</p>
             <h2>{activeSlide.title}</h2>
             <div className="viewer-visual" aria-hidden="true">

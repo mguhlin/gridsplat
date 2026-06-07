@@ -21,6 +21,8 @@ import { Tooltip } from './components/Tooltip';
 import { SpreadsheetGrid } from './grid/SpreadsheetGrid';
 import { PictureGraph } from './picturegraph/PictureGraph';
 import { PresentationMode } from './present/PresentationMode';
+import { strings } from './i18n/strings';
+import { TemplatesLibrary } from './templates/TemplatesLibrary';
 
 type DialogKind = 'activity' | 'help' | 'privacy' | null;
 
@@ -43,7 +45,7 @@ const toolbarMenus = [
   },
   {
     label: 'Activities',
-    items: ['Try an activity', 'Teacher ideas', 'Sample data'],
+    items: ['Try an activity', 'Templates', 'Teacher ideas', 'Sample data'],
   },
   {
     label: 'Present',
@@ -99,6 +101,14 @@ export function App() {
       return;
     }
 
+    if (label === 'Templates') {
+      document
+        .getElementById('templates-title')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Templates are ready below.');
+      return;
+    }
+
     if (label === 'Try an activity' || label === 'Sample data') {
       setDialogKind('activity');
       return;
@@ -142,10 +152,7 @@ export function App() {
               </a>
             </p>
             <h1 id="app-title">GridSplat™</h1>
-            <p className="intro">
-              A kid-friendly spreadsheet for sorting, graphing, and making sense
-              of data.
-            </p>
+            <p className="intro">{strings.tagline}</p>
           </div>
         </div>
         <div className="header-actions" aria-label="Quick actions">
@@ -192,6 +199,7 @@ export function App() {
       <SpreadsheetGrid />
       <PictureGraph />
       <ActivitiesLibrary />
+      <TemplatesLibrary />
       <PresentationMode />
 
       {isSplashVisible ? (
@@ -219,8 +227,7 @@ export function App() {
                 >
                   DrawSplat™
                 </a>
-                . A kid-friendly spreadsheet for sorting, graphing, and making
-                sense of data.
+                . {strings.tagline}
               </p>
               <div className="tour-list" aria-label="First tour steps">
                 <span>1. Type data in the grid.</span>
@@ -315,6 +322,14 @@ export function App() {
             </p>
           </section>
           <section>
+            <h3>Templates</h3>
+            <p>
+              Use everyday templates for reading logs, homework, science
+              observations, allowance tracking, check registers, budgets, and
+              gradebooks.
+            </p>
+          </section>
+          <section>
             <h3>Presentation and offline use</h3>
             <p>Build whiteboard slides from the presentation panel.</p>
             <p>
@@ -340,16 +355,15 @@ export function App() {
           </section>
           <section>
             <h3>No trackers</h3>
-            <p>
-              The app does not include analytics scripts or advertising
-              trackers.
-            </p>
+            <p>{strings.privacyNoTrackers}</p>
           </section>
           <section>
             <h3>Teacher review</h3>
             <p>
               TEKS tags are included as source-linked classroom metadata and
-              should be reviewed by a teacher before publication.
+              coded math standards were checked against TEA/TAC sources on June
+              7, 2026. Science activities remain aligned in spirit until
+              educator review.
             </p>
           </section>
         </div>

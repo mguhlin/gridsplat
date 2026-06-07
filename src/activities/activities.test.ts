@@ -16,7 +16,14 @@ describe('activities library data', () => {
     }
   });
 
-  it('flags TEKS codes for human review', () => {
-    expect(teks.every((standard) => standard.needsHumanReview)).toBe(true);
+  it('tracks TEKS verification metadata', () => {
+    expect(
+      teks.every(
+        (standard) =>
+          standard.verificationStatus === 'verified' &&
+          standard.verifiedDate === '2026-06-07' &&
+          standard.sourceUrl.includes('tea.texas.gov'),
+      ),
+    ).toBe(true);
   });
 });

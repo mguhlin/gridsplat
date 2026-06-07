@@ -35,6 +35,9 @@ test('shows the welcome splash and opens toolbar help by keyboard', async ({
   await expect(
     page.getByRole('dialog', { name: 'GridSplat™ Help' }),
   ).toBeVisible();
+  await expect(
+    page.getByRole('dialog', { name: 'GridSplat™ Help' }),
+  ).toContainText('Templates');
   await page.getByRole('button', { name: 'Close dialog' }).click();
   await expect(
     page.getByRole('dialog', { name: 'GridSplat™ Help' }),
@@ -299,11 +302,12 @@ test('updates and exports the picture graph', async ({ page }, testInfo) => {
     '5 total',
   );
 
+  await page.getByTestId('export-picture-graph').scrollIntoViewIfNeeded();
+  const downloadPromise = page.waitForEvent('download');
   await page.getByTestId('export-picture-graph').click();
-  await expect(page.locator('html')).toHaveAttribute(
-    'data-picture-graph-exported',
-    'true',
-  );
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe('gridsplat-picture-graph.png');
 });
 
 test('autosaves sheet data in the browser and shows cloud setup status', async ({
@@ -356,6 +360,69 @@ test('loads an activity dataset and toggles teacher notes', async ({
   await expect(page.getByTestId('cell-B2')).toContainText('8');
 });
 
+test('loads everyday and financial literacy templates', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Template flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+  await page
+    .getByRole('heading', { name: 'Everyday Spreadsheet Templates' })
+    .scrollIntoViewIfNeeded();
+
+  await expect(page.locator('.template-card')).toHaveCount(8);
+
+  const allowanceTemplate = page.locator('.template-card').filter({
+    hasText: 'Allowance Tracker',
+  });
+
+  await expect(allowanceTemplate).toContainText('Financial Literacy');
+  await allowanceTemplate
+    .getByRole('button', { name: 'Load Template' })
+    .click();
+  await expect(page.getByText('Loaded activity data.')).toBeVisible();
+  await expect(page.getByTestId('cell-A1')).toContainText('Date');
+  await expect(page.getByTestId('cell-B2')).toContainText('Allowance');
+
+  await page
+    .getByRole('heading', { name: 'Everyday Spreadsheet Templates' })
+    .scrollIntoViewIfNeeded();
+  await page
+    .locator('.template-card')
+    .filter({ hasText: 'Simple Gradebook' })
+    .getByRole('button', { name: 'Load Template' })
+    .click();
+  await expect(page.getByTestId('cell-A1')).toContainText('Student');
+  await expect(page.getByTestId('cell-E1')).toContainText('Average');
+});
+
+test('formats numbers and starts over with confirmation', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Formatting flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+  await page.getByTestId('cell-A1').click();
+  await page.getByLabel('Edit cell A1').fill('12.5');
+  await page.getByLabel('Edit cell A1').press('Enter');
+
+  await page.getByLabel('Number format').selectOption('currency');
+  await expect(page.getByTestId('cell-A1')).toContainText('$12.50');
+
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Start Over' }).click();
+  await expect(
+    page.getByText('Started over with a blank sheet.'),
+  ).toBeVisible();
+  await expect(page.getByTestId('cell-A1')).not.toContainText('$12.50');
+});
+
 test('builds and navigates a presentation', async ({ page }, testInfo) => {
   test.skip(
     testInfo.project.name !== 'chromium',
@@ -373,13 +440,27 @@ test('builds and navigates a presentation', async ({ page }, testInfo) => {
   await page.getByRole('button', { name: /Add Chart Slide/ }).click();
   await expect(page.getByLabel('Presentation slides')).toContainText('Slide 4');
 
+  await page.getByRole('button', { name: 'Move Up' }).nth(3).click();
+  await expect(page.getByLabel('Presentation slides')).toContainText('Slide 3');
+
+  await page.evaluate(() => {
+    window.print = () => {
+      document.documentElement.dataset.printed = 'true';
+    };
+  });
+  await page.getByRole('button', { name: 'Print Slides' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-printed', 'true');
+
+  await page.getByRole('button', { name: 'Spotlight' }).click();
+
   await page.getByRole('button', { name: 'Start Presentation' }).click();
   await expect(
     page.getByRole('dialog', { name: 'Presentation viewer' }),
   ).toBeVisible();
+  await expect(page.locator('.viewer-slide.spotlight')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Chart View' })).toBeVisible();
 
-  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowRight');
   await expect(
     page.getByRole('heading', { name: 'Picture Graph' }),
   ).toBeVisible();

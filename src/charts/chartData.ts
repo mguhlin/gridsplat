@@ -48,3 +48,36 @@ export function buildChartData(
     type,
   };
 }
+
+export function buildFirstDataRangeChart(
+  sheet: SheetData,
+  type: ChartKind,
+  title = 'My Chart',
+): ChartDataModel {
+  let endRow = -1;
+
+  for (let row = sheet.length - 1; row >= 0; row -= 1) {
+    if (sheet[row].some((cell) => cell.rawValue.trim().length > 0)) {
+      endRow = row;
+      break;
+    }
+  }
+
+  if (endRow < 0) {
+    return {
+      points: [],
+      title,
+      type,
+    };
+  }
+
+  return buildChartData(
+    sheet,
+    {
+      start: { row: 1, col: 0 },
+      end: { row: endRow, col: 1 },
+    },
+    type,
+    title,
+  );
+}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createSheet, updateCell } from '../grid/gridModel';
-import { buildChartData } from './chartData';
+import { buildChartData, buildFirstDataRangeChart } from './chartData';
 
 describe('chart data helpers', () => {
   it('builds label/value chart points from a selected two-column range', () => {
@@ -45,5 +45,18 @@ describe('chart data helpers', () => {
     );
 
     expect(chart.points).toHaveLength(0);
+  });
+
+  it('can infer the first label/value data range after a header row', () => {
+    let sheet = createSheet(20, 20);
+
+    sheet = updateCell(sheet, { row: 0, col: 0 }, 'Fruit');
+    sheet = updateCell(sheet, { row: 0, col: 1 }, 'Count');
+    sheet = updateCell(sheet, { row: 1, col: 0 }, 'Apples');
+    sheet = updateCell(sheet, { row: 1, col: 1 }, '4');
+
+    expect(buildFirstDataRangeChart(sheet, 'bar').points).toEqual([
+      { label: 'Apples', value: 4 },
+    ]);
   });
 });

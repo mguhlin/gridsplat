@@ -3,19 +3,24 @@ import {
   type KeyboardEvent,
   type PointerEvent,
   type ChangeEvent,
+  useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
 import { ChartCanvas } from '../charts/ChartCanvas';
 import {
+  buildFirstDataRangeChart,
   buildChartData,
   type ChartDataModel,
   type ChartKind,
 } from '../charts/chartData';
+import { loadAutosave, saveAutosave } from '../io/autosave';
 import { exportCsv, importCsv } from '../io/csv';
+import { cloudProviders } from '../io/cloud/providers';
 import { downloadText } from '../io/download';
 import { exportNativeJson, importNativeJson } from '../io/json';
+import { saveSheetLocally } from '../io/localFile';
 import {
   exportMarkdown,
   importMarkdown,
@@ -69,9 +74,13 @@ function buildOffsets(sizes: number[]): number[] {
 export function SpreadsheetGrid() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [sheet, setSheet] = useState<SheetData>(() =>
-    createSheet(DEFAULT_ROWS, DEFAULT_COLS),
-  );
+  const [sheet, setSheet] = useState<SheetData>(() => {
+    try {
+      return loadAutosave() ?? createSheet(DEFAULT_ROWS, DEFAULT_COLS);
+    } catch {
+      return createSheet(DEFAULT_ROWS, DEFAULT_COLS);
+    }
+  });
   const [history, setHistory] = useState<SheetData[]>([]);
   const [selection, setSelection] = useState<SelectionRange>(() =>
     createSelection({ row: 0, col: 0 }),
@@ -95,6 +104,16 @@ export function SpreadsheetGrid() {
     null,
   );
   const [chartTitle, setChartTitle] = useState('My Chart');
+  const isOnline = typeof navigator === 'undefined' ? true : navigator.onLine;
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      saveAutosave(sheet);
+      setFileMessage('Autosaved in this browser.');
+    }, 700);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [sheet]);
 
   const totalWidth = useMemo(
     () => HEADER_SIZE + colWidths.reduce((sum, width) => sum + width, 0),
@@ -349,8 +368,39 @@ export function SpreadsheetGrid() {
     }
   }
 
+  async function saveLocalFile() {
+    setFileMessage(await saveSheetLocally(sheet));
+  }
+
+  async function tryCloudProvider(providerName: string) {
+    const provider = cloudProviders.find((item) => item.name === providerName);
+
+    if (!provider) {
+      return;
+    }
+
+    try {
+      await provider.connect();
+    } catch (error) {
+      setFileMessage(
+        error instanceof Error
+          ? error.message
+          : `${provider.name} is not connected yet.`,
+      );
+    }
+  }
+
   function makeChart(type: ChartKind) {
-    const nextChart = buildChartData(sheet, selection, type, chartTitle);
+    let nextChart = buildChartData(sheet, selection, type, chartTitle);
+    let nextSelection = selection;
+
+    if (nextChart.points.length === 0) {
+      nextChart = buildFirstDataRangeChart(sheet, type, chartTitle);
+      nextSelection = {
+        start: { row: 1, col: 0 },
+        end: { row: Math.max(1, nextChart.points.length), col: 1 },
+      };
+    }
 
     if (nextChart.points.length === 0) {
       setFileMessage('Select labels and numbers before making a chart.');
@@ -358,7 +408,7 @@ export function SpreadsheetGrid() {
     }
 
     setChart(nextChart);
-    setChartSelection(selection);
+    setChartSelection(nextSelection);
     setFileMessage('Chart ready.');
   }
 
@@ -489,6 +539,20 @@ export function SpreadsheetGrid() {
         >
           Markdown
         </button>
+        <button className="big-action" type="button" onClick={saveLocalFile}>
+          Save File
+        </button>
+        {cloudProviders.map((provider) => (
+          <button
+            className="big-action secondary"
+            key={provider.id}
+            type="button"
+            onClick={() => tryCloudProvider(provider.name)}
+            disabled={!isOnline}
+          >
+            {provider.name}
+          </button>
+        ))}
         <label className="header-toggle">
           <input
             type="checkbox"

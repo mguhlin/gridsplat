@@ -299,3 +299,27 @@ test('updates and exports the picture graph', async ({ page }, testInfo) => {
 
   expect(download.suggestedFilename()).toBe('easysheet-picture-graph.png');
 });
+
+test('autosaves sheet data in the browser and shows cloud setup status', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Save flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+  await page.getByTestId('cell-A1').click();
+  await page.getByLabel('Edit cell A1').fill('Autosaved');
+  await page.getByLabel('Edit cell A1').press('Enter');
+  await expect(page.getByText('Autosaved in this browser.')).toBeVisible({
+    timeout: 3000,
+  });
+
+  await page.reload();
+  await dismissSplash(page);
+  await expect(page.getByTestId('cell-A1')).toContainText('Autosaved');
+
+  await page.getByRole('button', { name: 'Google Drive' }).click();
+  await expect(page.getByText(/VITE_GOOGLE_DRIVE_CLIENT_ID/)).toBeVisible();
+});

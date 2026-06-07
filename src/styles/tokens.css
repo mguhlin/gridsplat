@@ -5,8 +5,12 @@
   --color-text: #172033;
   --color-muted: #53627a;
   --color-primary: #0757a8;
+  --color-primary-dark: #053f7a;
   --color-accent: #f2c94c;
+  --color-selected: #ffcf33;
   --color-border: #b8cee8;
+  --color-grid-border: #9fb9d7;
+  --color-header: #eaf4ff;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;

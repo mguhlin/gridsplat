@@ -1,0 +1,488 @@
+import {
+  type ClipboardEvent,
+  type KeyboardEvent,
+  type PointerEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  createSheet,
+  getColumnName,
+  isCellInSelection,
+  parsePastedText,
+  pasteCells,
+  serializeSelection,
+  updateCell,
+} from './gridModel';
+import type { CellAddress, SelectionRange, SheetData } from './types';
+
+const DEFAULT_ROWS = 20;
+const DEFAULT_COLS = 20;
+const DEFAULT_ROW_HEIGHT = 56;
+const DEFAULT_COL_WIDTH = 120;
+const HEADER_SIZE = 48;
+const OVERSCAN = 4;
+
+interface ResizeState {
+  type: 'row' | 'col';
+  index: number;
+  startPointer: number;
+  startSize: number;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+function createSelection(address: CellAddress): SelectionRange {
+  return {
+    start: address,
+    end: address,
+  };
+}
+
+function buildOffsets(sizes: number[]): number[] {
+  return sizes.reduce<number[]>((offsets, size, index) => {
+    const previousOffset = offsets[index - 1] ?? HEADER_SIZE;
+    const previousSize = sizes[index - 1] ?? 0;
+
+    return [...offsets, previousOffset + previousSize];
+  }, []);
+}
+
+export function SpreadsheetGrid() {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [sheet, setSheet] = useState<SheetData>(() =>
+    createSheet(DEFAULT_ROWS, DEFAULT_COLS),
+  );
+  const [history, setHistory] = useState<SheetData[]>([]);
+  const [selection, setSelection] = useState<SelectionRange>(() =>
+    createSelection({ row: 0, col: 0 }),
+  );
+  const [editingCell, setEditingCell] = useState<CellAddress | null>(null);
+  const [draftValue, setDraftValue] = useState('');
+  const [isPlainHeaders, setIsPlainHeaders] = useState(false);
+  const [dragAnchor, setDragAnchor] = useState<CellAddress | null>(null);
+  const [resizeState, setResizeState] = useState<ResizeState | null>(null);
+  const [rowHeights, setRowHeights] = useState<number[]>(
+    Array.from({ length: DEFAULT_ROWS }, () => DEFAULT_ROW_HEIGHT),
+  );
+  const [colWidths, setColWidths] = useState<number[]>(
+    Array.from({ length: DEFAULT_COLS }, () => DEFAULT_COL_WIDTH),
+  );
+  const [scrollPosition, setScrollPosition] = useState({ top: 0, left: 0 });
+  const [viewportSize, setViewportSize] = useState({ width: 900, height: 620 });
+
+  const totalWidth = useMemo(
+    () => HEADER_SIZE + colWidths.reduce((sum, width) => sum + width, 0),
+    [colWidths],
+  );
+  const totalHeight = useMemo(
+    () => HEADER_SIZE + rowHeights.reduce((sum, height) => sum + height, 0),
+    [rowHeights],
+  );
+
+  const columnOffsets = useMemo(() => buildOffsets(colWidths), [colWidths]);
+  const rowOffsets = useMemo(() => buildOffsets(rowHeights), [rowHeights]);
+
+  const visibleRows = useMemo(
+    () =>
+      rowOffsets
+        .map((top, row) => ({ row, top, height: rowHeights[row] }))
+        .filter(
+          ({ top, height }) =>
+            top + height >=
+              scrollPosition.top - OVERSCAN * DEFAULT_ROW_HEIGHT &&
+            top <=
+              scrollPosition.top +
+                viewportSize.height +
+                OVERSCAN * DEFAULT_ROW_HEIGHT,
+        ),
+    [rowHeights, rowOffsets, scrollPosition.top, viewportSize.height],
+  );
+
+  const visibleCols = useMemo(
+    () =>
+      columnOffsets
+        .map((left, col) => ({ col, left, width: colWidths[col] }))
+        .filter(
+          ({ left, width }) =>
+            left + width >=
+              scrollPosition.left - OVERSCAN * DEFAULT_COL_WIDTH &&
+            left <=
+              scrollPosition.left +
+                viewportSize.width +
+                OVERSCAN * DEFAULT_COL_WIDTH,
+        ),
+    [colWidths, columnOffsets, scrollPosition.left, viewportSize.width],
+  );
+
+  function remember(currentSheet: SheetData) {
+    setHistory((previous) => [...previous.slice(-24), currentSheet]);
+  }
+
+  function selectCell(address: CellAddress) {
+    const nextAddress = {
+      row: clamp(address.row, 0, DEFAULT_ROWS - 1),
+      col: clamp(address.col, 0, DEFAULT_COLS - 1),
+    };
+
+    setSelection(createSelection(nextAddress));
+    setEditingCell(null);
+  }
+
+  function beginEditing(address: CellAddress) {
+    setSelection(createSelection(address));
+    setEditingCell(address);
+    setDraftValue(sheet[address.row][address.col].rawValue);
+  }
+
+  function commitEditing(moveDown = false) {
+    if (!editingCell) {
+      return;
+    }
+
+    const target = editingCell;
+
+    setSheet((currentSheet) => {
+      remember(currentSheet);
+      return updateCell(currentSheet, target, draftValue);
+    });
+    setEditingCell(null);
+
+    if (moveDown) {
+      selectCell({ row: target.row + 1, col: target.col });
+    }
+  }
+
+  function cancelEditing() {
+    setEditingCell(null);
+    setDraftValue('');
+  }
+
+  function undo() {
+    setHistory((previous) => {
+      const priorSheet = previous.at(-1);
+
+      if (priorSheet) {
+        setSheet(priorSheet);
+      }
+
+      return previous.slice(0, -1);
+    });
+    setEditingCell(null);
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (editingCell) {
+      return;
+    }
+
+    const active = selection.end;
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      beginEditing(active);
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      selectCell({ row: active.row + 1, col: active.col });
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      selectCell({ row: active.row - 1, col: active.col });
+    }
+
+    if (event.key === 'ArrowRight' || event.key === 'Tab') {
+      event.preventDefault();
+      selectCell({ row: active.row, col: active.col + 1 });
+    }
+
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      selectCell({ row: active.row, col: active.col - 1 });
+    }
+  }
+
+  function handleCellPointerDown(address: CellAddress) {
+    setDragAnchor(address);
+    setSelection(createSelection(address));
+    setEditingCell(null);
+  }
+
+  function handleCellPointerEnter(address: CellAddress) {
+    if (!dragAnchor) {
+      return;
+    }
+
+    setSelection({
+      start: dragAnchor,
+      end: address,
+    });
+  }
+
+  function handleCellPointerUp(address: CellAddress) {
+    if (
+      dragAnchor &&
+      dragAnchor.row === address.row &&
+      dragAnchor.col === address.col
+    ) {
+      beginEditing(address);
+    }
+
+    setDragAnchor(null);
+  }
+
+  function handleCopy(event: ClipboardEvent<HTMLDivElement>) {
+    event.clipboardData.setData(
+      'text/plain',
+      serializeSelection(sheet, selection),
+    );
+    event.preventDefault();
+  }
+
+  function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
+    const pastedText = event.clipboardData.getData('text/plain');
+
+    if (!pastedText) {
+      return;
+    }
+
+    event.preventDefault();
+
+    setSheet((currentSheet) => {
+      remember(currentSheet);
+      return pasteCells(
+        currentSheet,
+        selection.start,
+        parsePastedText(pastedText),
+      );
+    });
+  }
+
+  function handleScroll() {
+    const scroller = scrollerRef.current;
+
+    if (!scroller) {
+      return;
+    }
+
+    setScrollPosition({
+      top: scroller.scrollTop,
+      left: scroller.scrollLeft,
+    });
+    setViewportSize({
+      width: scroller.clientWidth,
+      height: scroller.clientHeight,
+    });
+  }
+
+  function startResize(
+    event: PointerEvent<HTMLButtonElement>,
+    resize: ResizeState,
+  ) {
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setResizeState(resize);
+  }
+
+  function continueResize(event: PointerEvent<HTMLButtonElement>) {
+    if (!resizeState) {
+      return;
+    }
+
+    if (resizeState.type === 'col') {
+      const delta = event.clientX - resizeState.startPointer;
+      const nextWidth = clamp(resizeState.startSize + delta, 72, 240);
+
+      setColWidths((current) =>
+        current.map((width, index) =>
+          index === resizeState.index ? nextWidth : width,
+        ),
+      );
+    }
+
+    if (resizeState.type === 'row') {
+      const delta = event.clientY - resizeState.startPointer;
+      const nextHeight = clamp(resizeState.startSize + delta, 44, 140);
+
+      setRowHeights((current) =>
+        current.map((height, index) =>
+          index === resizeState.index ? nextHeight : height,
+        ),
+      );
+    }
+  }
+
+  function stopResize() {
+    setResizeState(null);
+  }
+
+  return (
+    <section className="sheet-workspace" aria-label="Spreadsheet workspace">
+      <div className="sheet-toolbar" aria-label="Sheet tools">
+        <button
+          className="big-action"
+          type="button"
+          onClick={undo}
+          disabled={history.length === 0}
+        >
+          Undo
+        </button>
+        <label className="header-toggle">
+          <input
+            type="checkbox"
+            checked={isPlainHeaders}
+            onChange={(event) => setIsPlainHeaders(event.target.checked)}
+          />
+          Plain headers
+        </label>
+        <p aria-live="polite" className="selection-readout">
+          Cell {getColumnName(selection.end.col)}
+          {selection.end.row + 1}
+        </p>
+      </div>
+      <div
+        ref={scrollerRef}
+        className="sheet-scroller"
+        role="grid"
+        aria-label="EasySheet grid"
+        aria-rowcount={DEFAULT_ROWS}
+        aria-colcount={DEFAULT_COLS}
+        tabIndex={0}
+        onCopy={handleCopy}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+        onScroll={handleScroll}
+      >
+        <div
+          className="sheet-canvas"
+          style={{ width: totalWidth, height: totalHeight }}
+        >
+          <div
+            className="corner-header"
+            style={{ width: HEADER_SIZE, height: HEADER_SIZE }}
+          />
+          {visibleCols.map(({ col, left, width }) => (
+            <div
+              aria-hidden="true"
+              className="column-header"
+              key={col}
+              style={{
+                left,
+                width,
+                height: HEADER_SIZE,
+              }}
+            >
+              {isPlainHeaders ? '' : getColumnName(col)}
+              <button
+                aria-label={`Resize column ${getColumnName(col)}`}
+                className="resize-handle resize-handle-col"
+                type="button"
+                onPointerDown={(event) =>
+                  startResize(event, {
+                    type: 'col',
+                    index: col,
+                    startPointer: event.clientX,
+                    startSize: width,
+                  })
+                }
+                onPointerMove={continueResize}
+                onPointerUp={stopResize}
+              />
+            </div>
+          ))}
+          {visibleRows.map(({ row, top, height }) => (
+            <div
+              aria-hidden="true"
+              className="row-header"
+              key={row}
+              style={{
+                top,
+                width: HEADER_SIZE,
+                height,
+              }}
+            >
+              {isPlainHeaders ? '' : row + 1}
+              <button
+                aria-label={`Resize row ${row + 1}`}
+                className="resize-handle resize-handle-row"
+                type="button"
+                onPointerDown={(event) =>
+                  startResize(event, {
+                    type: 'row',
+                    index: row,
+                    startPointer: event.clientY,
+                    startSize: height,
+                  })
+                }
+                onPointerMove={continueResize}
+                onPointerUp={stopResize}
+              />
+            </div>
+          ))}
+          {visibleRows.flatMap(({ row, top, height }) =>
+            visibleCols.map(({ col, left, width }) => {
+              const address = { row, col };
+              const cell = sheet[row][col];
+              const isEditing =
+                editingCell?.row === row && editingCell.col === col;
+              const isSelected = isCellInSelection(address, selection);
+
+              return (
+                <div
+                  aria-colindex={col + 1}
+                  aria-label={`Cell ${getColumnName(col)}${row + 1}`}
+                  aria-rowindex={row + 1}
+                  className={isSelected ? 'sheet-cell selected' : 'sheet-cell'}
+                  data-testid={`cell-${getColumnName(col)}${row + 1}`}
+                  key={`${row}-${col}`}
+                  role="gridcell"
+                  style={{
+                    top,
+                    left,
+                    width,
+                    height,
+                  }}
+                  onDoubleClick={() => beginEditing(address)}
+                  onPointerDown={() => handleCellPointerDown(address)}
+                  onPointerEnter={() => handleCellPointerEnter(address)}
+                  onPointerUp={() => handleCellPointerUp(address)}
+                >
+                  {isEditing ? (
+                    <input
+                      aria-label={`Edit cell ${getColumnName(col)}${row + 1}`}
+                      className="cell-editor"
+                      value={draftValue}
+                      autoFocus
+                      onBlur={() => commitEditing()}
+                      onChange={(event) => setDraftValue(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          commitEditing(true);
+                        }
+
+                        if (event.key === 'Escape') {
+                          event.preventDefault();
+                          cancelEditing();
+                        }
+                      }}
+                    />
+                  ) : (
+                    <span className={`cell-value ${cell.type}`}>
+                      {cell.displayValue}
+                    </span>
+                  )}
+                </div>
+              );
+            }),
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -12,7 +12,7 @@ A child-centered, browser-based spreadsheet, charting, and graphing tool for gra
 
 EasySheet is a website. A child opens it in any browser — laptop, Chromebook, tablet, or phone — and gets a big, colorful, friendly spreadsheet. They can type numbers, make charts, drag pictures to build picture graphs, and save their work to their device or to Google Drive, Dropbox, or OneDrive. Teachers get extra tools: ready-made activities, project ideas, and a presentation mode for the whiteboard. Everything runs in the browser. There is no server doing the math — the child's device does all the work. That keeps it private, cheap to host, and fast.
 
-**The single most important architectural decision:** EasySheet is a *static* web app. It is just HTML, CSS, and JavaScript files sitting on a host (like GitHub Pages). There is no backend database, no login server, no place where student work is stored on the internet by default. Cloud saving is optional and goes directly from the child's browser to *their own* Google/Dropbox/Microsoft account. This is the right choice for a school product: it is FERPA-friendly, free to host, and cannot leak data it never collects.
+**The single most important architectural decision:** EasySheet is a _static_ web app. It is just HTML, CSS, and JavaScript files sitting on a host (like GitHub Pages). There is no backend database, no login server, no place where student work is stored on the internet by default. Cloud saving is optional and goes directly from the child's browser to _their own_ Google/Dropbox/Microsoft account. This is the right choice for a school product: it is FERPA-friendly, free to host, and cannot leak data it never collects.
 
 ---
 
@@ -20,21 +20,21 @@ EasySheet is a website. A child opens it in any browser — laptop, Chromebook, 
 
 Pick boring, stable, well-documented tools. A child-facing education tool must work in 5 years, not chase trends.
 
-| Need | Choice | Why this and not something else |
-|------|--------|--------------------------------|
-| App framework | **Vanilla JS + Vite** (build tool) OR **React + Vite** | Vanilla keeps it light and dependency-free; React makes the UI state (drag-drop, menus) far easier to manage. **Recommendation: React + Vite.** The drag-and-drop picture graphs and live-updating charts are much harder to keep bug-free in vanilla JS. |
-| Language | **TypeScript** | Catches mistakes before a child ever sees them. Non-negotiable for a maintainable codebase. |
-| Spreadsheet grid | **Custom lightweight grid** built on a canvas or virtualized DOM, NOT a heavy commercial grid | Commercial grids (AG Grid, Handsontable) are powerful but adult-oriented, often paid, and hard to make "big-cell + kid-friendly." Build a focused grid. (See Module 3 for the build-vs-buy note.) |
-| Formula engine | **HyperFormula** (open source, MIT) | Re-implementing Excel-style formulas (SUM, AVERAGE, IF…) is a multi-month trap. HyperFormula handles ~400 functions, is well-tested, and runs entirely in the browser. Do not write your own formula parser. |
-| Charts | **Chart.js** (MIT) | Simple, mobile-friendly, animated, accessible. Covers bar, line, pie, scatter. For the *drag-drop picture graph*, build custom (Module 7) — Chart.js can't do that. |
-| Drag-and-drop | **@dnd-kit** (MIT) | Touch-friendly, accessible, works on phones. Avoid the older react-dnd (weaker touch support). |
-| File parsing (import/export) | **SheetJS (xlsx)** community build for Excel/CSV; **PapaParse** for robust CSV | SheetJS reads/writes .xlsx, .csv, and more. PapaParse handles messy real-world CSVs gracefully. |
-| Markdown tables | **Custom small functions** (parse + serialize) | Markdown tables are simple enough to handle in ~80 lines; no library needed. |
-| Cloud save | **Google Drive API**, **Dropbox JS SDK**, **Microsoft Graph (OneDrive)** via OAuth 2.0 PKCE | These let the browser talk directly to the user's cloud with no server. PKCE is the login flow that works for static sites. |
-| Local save | **File System Access API** with download/upload fallback | Lets returning users re-open the same file. Fallback covers Safari/Firefox where the API is limited. |
-| Hosting | **GitHub Pages** (or Netlify/Cloudflare Pages) | Free, fast, static. Matches the "no backend" design. |
-| Testing | **Vitest** (unit) + **Playwright** (browser/end-to-end) | Vitest is fast and pairs with Vite. Playwright tests real browser behavior including touch. |
-| Code quality | **ESLint + Prettier** | Enforces consistent, readable code automatically. |
+| Need                         | Choice                                                                                        | Why this and not something else                                                                                                                                                                                                                           |
+| ---------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App framework                | **Vanilla JS + Vite** (build tool) OR **React + Vite**                                        | Vanilla keeps it light and dependency-free; React makes the UI state (drag-drop, menus) far easier to manage. **Recommendation: React + Vite.** The drag-and-drop picture graphs and live-updating charts are much harder to keep bug-free in vanilla JS. |
+| Language                     | **TypeScript**                                                                                | Catches mistakes before a child ever sees them. Non-negotiable for a maintainable codebase.                                                                                                                                                               |
+| Spreadsheet grid             | **Custom lightweight grid** built on a canvas or virtualized DOM, NOT a heavy commercial grid | Commercial grids (AG Grid, Handsontable) are powerful but adult-oriented, often paid, and hard to make "big-cell + kid-friendly." Build a focused grid. (See Module 3 for the build-vs-buy note.)                                                         |
+| Formula engine               | **HyperFormula** (open source, MIT)                                                           | Re-implementing Excel-style formulas (SUM, AVERAGE, IF…) is a multi-month trap. HyperFormula handles ~400 functions, is well-tested, and runs entirely in the browser. Do not write your own formula parser.                                              |
+| Charts                       | **Chart.js** (MIT)                                                                            | Simple, mobile-friendly, animated, accessible. Covers bar, line, pie, scatter. For the _drag-drop picture graph_, build custom (Module 7) — Chart.js can't do that.                                                                                       |
+| Drag-and-drop                | **@dnd-kit** (MIT)                                                                            | Touch-friendly, accessible, works on phones. Avoid the older react-dnd (weaker touch support).                                                                                                                                                            |
+| File parsing (import/export) | **SheetJS (xlsx)** community build for Excel/CSV; **PapaParse** for robust CSV                | SheetJS reads/writes .xlsx, .csv, and more. PapaParse handles messy real-world CSVs gracefully.                                                                                                                                                           |
+| Markdown tables              | **Custom small functions** (parse + serialize)                                                | Markdown tables are simple enough to handle in ~80 lines; no library needed.                                                                                                                                                                              |
+| Cloud save                   | **Google Drive API**, **Dropbox JS SDK**, **Microsoft Graph (OneDrive)** via OAuth 2.0 PKCE   | These let the browser talk directly to the user's cloud with no server. PKCE is the login flow that works for static sites.                                                                                                                               |
+| Local save                   | **File System Access API** with download/upload fallback                                      | Lets returning users re-open the same file. Fallback covers Safari/Firefox where the API is limited.                                                                                                                                                      |
+| Hosting                      | **GitHub Pages** (or Netlify/Cloudflare Pages)                                                | Free, fast, static. Matches the "no backend" design.                                                                                                                                                                                                      |
+| Testing                      | **Vitest** (unit) + **Playwright** (browser/end-to-end)                                       | Vitest is fast and pairs with Vite. Playwright tests real browser behavior including touch.                                                                                                                                                               |
+| Code quality                 | **ESLint + Prettier**                                                                         | Enforces consistent, readable code automatically.                                                                                                                                                                                                         |
 
 **Agent instruction:** Use the exact library names above. Pin versions in `package.json`. If any library is unavailable or deprecated at build time, stop and report it rather than substituting silently.
 
@@ -45,6 +45,7 @@ Pick boring, stable, well-documented tools. A child-facing education tool must w
 **Purpose:** Create the skeleton, tooling, and rules every later module depends on.
 
 **Tasks:**
+
 1. Initialize a Vite + React + TypeScript project.
 2. Add ESLint, Prettier, Vitest, Playwright. Add npm scripts: `dev`, `build`, `preview`, `lint`, `format`, `test`, `test:e2e`.
 3. Create the folder structure below.
@@ -54,6 +55,7 @@ Pick boring, stable, well-documented tools. A child-facing education tool must w
 7. Create a `.env.example` listing the cloud API keys needed (filled in later, never committed).
 
 **Folder structure:**
+
 ```
 easysheet/
 ├── public/                 # static assets: splash images, icon SVGs, sample data
@@ -93,6 +95,7 @@ easysheet/
 **Purpose:** The big-cell, kid-friendly spreadsheet itself.
 
 **Design requirements (the "kid-friendly" part):**
+
 - Cells are **large by default** (e.g., 120px wide × 56px tall) with big, readable type (≥18px). Adults/teachers can shrink via a toggle, but big is the default.
 - High color contrast; selected cell has a thick, obvious 4px border.
 - Tapping a cell on mobile opens a roomy input — never a tiny one.
@@ -101,6 +104,7 @@ easysheet/
 - Full keyboard navigation (arrows, tab, enter) AND full touch support.
 
 **Tasks:**
+
 1. Build a virtualized grid component (render only visible cells; recycle DOM nodes on scroll).
 2. Cell model: each cell holds `rawValue` (what the child typed), `displayValue` (what shows), and `type` (number, text, formula).
 3. Selection: single cell, range select (drag), select whole row/column by tapping the header.
@@ -122,7 +126,8 @@ easysheet/
 **Purpose:** Make `=SUM(A1:A10)` and friends work, without writing a math parser.
 
 **Tasks:**
-1. Wrap **HyperFormula** behind a small interface (`formulas/engine.ts`) so the rest of the app never calls HyperFormula directly. (This is the *adapter pattern* — if HyperFormula is ever replaced, only this file changes.)
+
+1. Wrap **HyperFormula** behind a small interface (`formulas/engine.ts`) so the rest of the app never calls HyperFormula directly. (This is the _adapter pattern_ — if HyperFormula is ever replaced, only this file changes.)
 2. On every cell edit, push the change into HyperFormula and read back computed values for all affected cells.
 3. Expose a **curated, kid-appropriate function list** for the function menu: SUM, AVERAGE, MIN, MAX, COUNT, ROUND, IF, plus a few. The full ~400 functions stay available by typing, but the menu shows the friendly subset with plain-language descriptions ("AVERAGE — finds the middle/typical value").
 4. Friendly error messages: instead of `#DIV/0!`, show "You can't divide by zero 🙂 — check your numbers." Map every error code to a kid-readable sentence.
@@ -138,6 +143,7 @@ easysheet/
 **Purpose:** The colorful, big-icon, friendly look — defined once, reused everywhere.
 
 **Tasks:**
+
 1. Create design tokens (`styles/tokens.css`): a small palette of bright, high-contrast, accessible colors; large spacing units; big font sizes; rounded corners.
 2. Build core components: **BigButton**, **IconButton** (extra-large, ≥48px tap target — Apple/Google accessibility minimum), **DropdownMenu**, **Dialog**, **Tooltip**, **Toast** (for friendly messages).
 3. All icons are **labeled with text**, not icon-only — children may not recognize a floppy-disk "save" icon, so pair every icon with a word.
@@ -146,6 +152,7 @@ easysheet/
 6. Honor `prefers-reduced-motion` (some kids are motion-sensitive). Animations gentle and skippable.
 
 **Accessibility (build in from the start, not bolted on):**
+
 - WCAG AA color contrast minimum.
 - Every interactive element keyboard-reachable with a visible focus ring.
 - ARIA labels on the grid and controls so screen readers work.
@@ -163,6 +170,7 @@ easysheet/
 **Purpose:** Turn data into bar, line, pie, and scatter charts kids can make in two taps.
 
 **Tasks:**
+
 1. "Make a Chart" flow: child selects a range, taps Chart menu, picks a type from a **visual picker** (big preview thumbnails, not a text list).
 2. Wrap **Chart.js**. Auto-detect labels vs. values from the selected range (first column = labels is a sensible default; let them swap).
 3. Charts update live when underlying data changes.
@@ -181,12 +189,14 @@ easysheet/
 **Purpose:** The drag-and-drop picture graph (pictograph) where children increase/decrease quantities by dragging pictures. This is the standout, TEKS-aligned, grade-3 favorite.
 
 **Design:**
+
 - Categories run along the bottom (e.g., "Apples, Bananas, Oranges").
 - The child **drags a picture up to add one**, or taps a big **+ / −** under each category. Each picture = a unit (with an optional "each picture = 2" key for older grades).
 - A live count and an optional linked data table update together — change the table, the pictures change; drag pictures, the table changes. (Two-way binding teaches the data-to-graph connection.)
 - A picture library: fruits, animals, shapes, sports, weather, simple objects — bright, clear, classroom-appropriate clip-art-style SVGs. Let children pick the picture per category.
 
 **Tasks:**
+
 1. Build the pictograph component with **@dnd-kit** for touch-friendly dragging.
 2. Implement the two-way binding between pictures and a small data table.
 3. Implement the "each picture equals N" scale key.
@@ -204,10 +214,12 @@ easysheet/
 **Purpose:** Get data in and out in many formats, easily.
 
 **Formats:**
+
 - **Import:** CSV (PapaParse), Excel .xlsx (SheetJS), JSON (native format), Markdown table (custom parser), paste-from-clipboard.
 - **Export:** CSV, .xlsx, JSON (native save format), Markdown table, PNG (charts/graphs).
 
 **Tasks:**
+
 1. Define the **native JSON save format** (`io/format.ts`) — a versioned schema holding sheet data, charts, picture graphs, and metadata. Include a `version` field from day one so future versions can upgrade old files. Document the schema in `docs/file-format.md`.
 2. Build importers and exporters, each in its own file, each behind a common interface.
 3. Markdown: parse pasted Markdown tables into the grid; copy/export selection as a Markdown table (the user specifically wants both directions).
@@ -224,17 +236,19 @@ easysheet/
 **Purpose:** Save and reopen work on the device, and optionally to Google Drive, Dropbox, OneDrive — with no backend server.
 
 **Tasks:**
+
 1. **Local save/open:** Use the File System Access API where supported (lets users re-save to the same file). Fallback: download a `.easysheet.json` file / upload to open. Always provide the fallback — Safari and Firefox don't fully support the modern API.
 2. **Cloud save (OAuth 2.0 with PKCE, browser-only):**
    - Google Drive API
    - Dropbox JavaScript SDK
    - Microsoft Graph API (OneDrive)
    - Each gets its own adapter behind a shared `CloudProvider` interface (`io/cloud/`). The UI ("Save to…") doesn't know which cloud it's talking to — only the adapter does.
-3. Store API client IDs in environment variables, injected at build time. **No secrets in the code.** PKCE means no client *secret* is needed (correct for static sites).
+3. Store API client IDs in environment variables, injected at build time. **No secrets in the code.** PKCE means no client _secret_ is needed (correct for static sites).
 4. Friendly auth flow: "Connect your Google Drive" with a clear, big button and a plain explanation of what access is granted ("EasySheet can only see files it creates").
 5. Handle the offline case gracefully: if there's no internet, cloud buttons are disabled with a friendly note; local save still works.
 
 **Critical caveats to surface to the product owner (you said you don't code — read these):**
+
 - Cloud APIs require **registering an app** with Google, Dropbox, and Microsoft and getting client IDs. This is free but is a manual setup step you (or an admin) must do once. The plan can't do it for you.
 - Google in particular may require an **app verification / review** before students outside your own organization can use Drive save. Budget weeks for this if you go public. Until then, it works for your own org/test accounts.
 - School Google/Microsoft accounts are often **locked down by the district** — third-party app access may be blocked by admins. Test with a real student account early. This is the #1 thing that will surprise you.
@@ -250,25 +264,27 @@ easysheet/
 **Purpose:** The teacher-facing curriculum value — ready activities, project ideas, and standards alignment.
 
 **Scope you set:**
+
 - **Math and Science TEKS.**
 - Real, coded alignment for **number TEKS and chart/graph-friendly TEKS**.
 - "Aligned in spirit" (no specific code) for the rest.
 
 **Tasks:**
+
 1. Create a TEKS data file (`activities/teks.json`) listing the relevant Math (and Science) standards with their official codes, grade, and a plain-language description. **Pull exact codes from the official Texas Essential Knowledge and Skills source; do not invent codes.** Flag any code you're unsure of for human review rather than guessing.
 2. Build an **Activities Library**: each activity has a title, grade band, the TEKS it hits (coded where applicable), a kid-facing instruction card, and a pre-loaded sample dataset. Examples to include:
-   - *Favorite Fruit Pictograph* (Grade 3, picture graph)
-   - *Class Pet Survey Bar Graph*
-   - *Daily Temperature Line Graph* (Science crossover)
-   - *Plant Growth Over Two Weeks* (Science, line graph)
-   - *Lunch Count Tally → Bar Chart*
-   - *Rolling Dice Probability* (number sense)
-   - *Recycling Sort Pictograph* (Science crossover)
+   - _Favorite Fruit Pictograph_ (Grade 3, picture graph)
+   - _Class Pet Survey Bar Graph_
+   - _Daily Temperature Line Graph_ (Science crossover)
+   - _Plant Growth Over Two Weeks_ (Science, line graph)
+   - _Lunch Count Tally → Bar Chart_
+   - _Rolling Dice Probability_ (number sense)
+   - _Recycling Sort Pictograph_ (Science crossover)
 3. Build a **Project Ideas** section: longer, open-ended prompts ("Track the weather for a week and make a graph," "Survey your class and present your findings").
 4. Each activity loads its sample data into a fresh sheet with one tap.
 5. A small "Teacher Notes" panel per activity (collapsed by default) with the standard, the goal, and discussion questions.
 
-**Important honesty note for the product owner:** TEKS codes change over time and exact wording matters for school adoption. The plan will *structure* the alignment, but a Texas educator (you) must verify the codes against the current official TEKS before publishing. The agent should not present invented or approximate codes as official.
+**Important honesty note for the product owner:** TEKS codes change over time and exact wording matters for school adoption. The plan will _structure_ the alignment, but a Texas educator (you) must verify the codes against the current official TEKS before publishing. The agent should not present invented or approximate codes as official.
 
 **Acceptance criteria:** At least 7 activities load with sample data and correct (verified) TEKS tags. Project ideas display. Teacher notes toggle.
 
@@ -281,6 +297,7 @@ easysheet/
 **Purpose:** An integrated way to present sheets, charts, and picture graphs on a classroom screen.
 
 **Tasks:**
+
 1. A "Present" mode that goes full-screen with large type, hides editing chrome, and shows one item at a time (a sheet view, a chart, or a picture graph) as "slides."
 2. Build slides by adding sheets/charts/graphs to a slide list; reorder by drag.
 3. Big next/previous controls and arrow-key/tap navigation; works on a touchscreen/whiteboard.
@@ -298,6 +315,7 @@ easysheet/
 **Purpose:** Make it learnable by an 8-year-old and safe by design.
 
 **Tasks:**
+
 1. First-run friendly tour (skippable, replayable from Help): 4–5 steps pointing at the toolbar, a cell, the Chart button, and Save.
 2. A Help menu with short, illustrated how-tos (no walls of text).
 3. **No data collection.** No analytics that track individual children, no ads, no third-party trackers. State this plainly in a one-paragraph kid/parent-friendly privacy note. (This is both an ethical stance and a practical one — student-data privacy laws like FERPA/COPPA make tracking minors a serious liability.)
@@ -333,31 +351,37 @@ You asked. Here is what's easy to overlook and is now folded into the modules ab
 The agent must follow these throughout. The product owner can use this section to check the work.
 
 **Comments and readability:**
-- Comment the *why*, not the *what*. Good: `// Children frequently mis-tap, so require confirmation before clearing.` Bad: `// set x to 5`.
+
+- Comment the _why_, not the _what_. Good: `// Children frequently mis-tap, so require confirmation before clearing.` Bad: `// set x to 5`.
 - Every file starts with a short header comment: its purpose and how it fits the app.
 - Every non-trivial function has a docstring (JSDoc/TSDoc) describing inputs, outputs, and edge cases.
 - Name things in plain English: `selectedCellRange`, not `scr`.
 
 **Structure:**
+
 - One responsibility per file/component. If a file passes ~300 lines, consider splitting.
 - Wrap third-party libraries behind your own small interface (adapter pattern) so they can be swapped: HyperFormula, Chart.js, each cloud SDK. This already appears in Modules 4, 6, 9.
 - Keep state management in `src/state/`; don't scatter app state across components.
 
 **Quality gates (enforced by CI — Module 1):**
+
 - Code must pass ESLint and Prettier before merge.
 - Each module ships with tests; overall, aim for meaningful coverage of core logic (grid, formulas, import/export, file format).
 - No `any` types in TypeScript without a written reason.
 - No secrets, keys, or passwords in the repository — ever.
 
 **Version control:**
+
 - Small, frequent commits with clear messages ("Add CSV import with PapaParse," not "stuff").
 - One module per branch; merge only when its acceptance criteria pass.
 
 **Performance:**
+
 - Test on a low-end device profile, not just a fast laptop. Chromebooks are the target.
 - Virtualize the grid; lazy-load heavy modules (charts, cloud SDKs) so first load is fast.
 
 **Documentation:**
+
 - Keep `docs/decisions.md` — every time you choose between options (e.g., build-vs-buy the grid), write one paragraph on what and why.
 - Keep `README.md` current: how to install, run, build, and deploy.
 
@@ -368,7 +392,7 @@ The agent must follow these throughout. The product owner can use this section t
 Build in this order. Do not skip ahead. Commit and run CI after each.
 
 1. ☐ **Module 1** — Foundation, tooling, CI, folder structure, error boundary.
-2. ☐ **Module 5** — Design system + UI shell + i18n string table + splash. *(Built early so later modules have buttons/menus to use.)*
+2. ☐ **Module 5** — Design system + UI shell + i18n string table + splash. _(Built early so later modules have buttons/menus to use.)_
 3. ☐ **Module 3** — The grid (hardest; budget the most time).
 4. ☐ **Module 4** — Formula engine (HyperFormula wrapper).
 5. ☐ **Module 8** — Import/export + versioned JSON file format + Markdown both directions.
@@ -398,4 +422,4 @@ Since you don't code, here are the things most likely to bite you, ranked:
 
 ---
 
-*End of plan. The agent should report back after each completed module with: what was built, whether acceptance criteria passed, and any decision recorded in `docs/decisions.md`.*
+_End of plan. The agent should report back after each completed module with: what was built, whether acceptance criteria passed, and any decision recorded in `docs/decisions.md`._

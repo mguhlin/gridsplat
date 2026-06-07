@@ -1,10 +1,10 @@
-# GridSplat File Format
+# GridSplat™ File Format
 
-GridSplat native files use JSON with the extension `.gridsplat.json`.
+GridSplat™ native files use JSON with the extension `.gridsplat.json`.
 
 Current import/export support:
 
-- GridSplat JSON: `.gridsplat.json`
+- GridSplat™ JSON: `.gridsplat.json`
 - CSV: `.csv`
 - Markdown tables: `.md` or `.markdown`
 
@@ -17,7 +17,7 @@ Excel `.xlsx` support is deferred until a maintained, vulnerability-free parser 
   "version": 1,
   "metadata": {
     "createdAt": "2026-06-07T00:00:00.000Z",
-    "title": "GridSplat"
+    "title": "GridSplat™"
   },
   "sheets": [
     {

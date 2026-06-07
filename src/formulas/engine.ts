@@ -42,8 +42,8 @@ export const friendlyFunctions: FriendlyFunction[] = [
 const friendlyErrorMessages: Record<string, string> = {
   CYCLE: 'This formula points back to itself. Try using a different cell.',
   DIV_BY_ZERO: "You can't divide by zero. Check your numbers.",
-  LIC: 'This formula needs a feature GridSplat cannot use yet.',
-  NAME: "GridSplat doesn't know that formula name yet.",
+  LIC: 'This formula needs a feature GridSplat™ cannot use yet.',
+  NAME: "GridSplat™ doesn't know that formula name yet.",
   NA: 'A value this formula needs is not available.',
   NUM: 'This formula made a number that is too large or too small.',
   REF: 'This formula points to a cell that does not exist.',

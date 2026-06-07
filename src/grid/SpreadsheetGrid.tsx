@@ -339,7 +339,7 @@ export function SpreadsheetGrid() {
         exportNativeJson(sheet),
         'application/json',
       );
-      setFileMessage('Downloaded a GridSplat JSON file.');
+      setFileMessage('Downloaded a GridSplat™ JSON file.');
     }
 
     if (format === 'csv') {
@@ -618,7 +618,7 @@ export function SpreadsheetGrid() {
         ref={scrollerRef}
         className="sheet-scroller"
         role="grid"
-        aria-label="GridSplat grid"
+        aria-label="GridSplat™ grid"
         aria-rowcount={DEFAULT_ROWS}
         aria-colcount={DEFAULT_COLS}
         tabIndex={0}

@@ -1,6 +1,6 @@
 # Contributing
 
-GridSplat is a child-centered education tool. Code should be stable, readable, accessible, and easy to maintain.
+GridSplat™ is a child-centered education tool. Code should be stable, readable, accessible, and easy to maintain.
 
 ## Standards
 

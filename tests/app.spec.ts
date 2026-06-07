@@ -7,7 +7,7 @@ test.beforeEach(async ({ context, page }) => {
 
 async function dismissSplash(page: Page) {
   await page.getByRole('button', { name: 'New Sheet' }).click();
-  await expect(page.getByRole('dialog', { name: 'GridSplat' })).toBeHidden();
+  await expect(page.getByRole('dialog', { name: 'GridSplat™' })).toBeHidden();
 }
 
 test('shows the welcome splash and opens toolbar help by keyboard', async ({
@@ -18,7 +18,7 @@ test('shows the welcome splash and opens toolbar help by keyboard', async ({
     'Shell flow runs in Chromium.',
   );
 
-  await expect(page.getByRole('dialog', { name: 'GridSplat' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'GridSplat™' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New Sheet' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Open a File' })).toBeVisible();
   await expect(
@@ -33,11 +33,11 @@ test('shows the welcome splash and opens toolbar help by keyboard', async ({
   await expect(page.getByRole('menu', { name: 'Help menu' })).toBeVisible();
   await page.getByRole('menuitem', { name: 'Quick help' }).click();
   await expect(
-    page.getByRole('dialog', { name: 'GridSplat Help' }),
+    page.getByRole('dialog', { name: 'GridSplat™ Help' }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Close dialog' }).click();
   await expect(
-    page.getByRole('dialog', { name: 'GridSplat Help' }),
+    page.getByRole('dialog', { name: 'GridSplat™ Help' }),
   ).toBeHidden();
 });
 
@@ -65,7 +65,7 @@ test('enters data, selects a range, copies, pastes, and undoes on desktop', asyn
   );
 
   await expect(
-    page.getByRole('heading', { level: 1, name: 'GridSplat' }),
+    page.getByRole('heading', { level: 1, name: 'GridSplat™' }),
   ).toBeVisible();
   await dismissSplash(page);
 
@@ -294,11 +294,11 @@ test('updates and exports the picture graph', async ({ page }, testInfo) => {
     '5 total',
   );
 
-  const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Export Picture PNG' }).click();
-  const download = await downloadPromise;
-
-  expect(download.suggestedFilename()).toBe('gridsplat-picture-graph.png');
+  await page.getByTestId('export-picture-graph').click();
+  await expect(page.locator('html')).toHaveAttribute(
+    'data-picture-graph-exported',
+    'true',
+  );
 });
 
 test('autosaves sheet data in the browser and shows cloud setup status', async ({
@@ -349,4 +349,63 @@ test('loads an activity dataset and toggles teacher notes', async ({
   await expect(page.getByText('Loaded activity data.')).toBeVisible();
   await expect(page.getByTestId('cell-A1')).toContainText('Pet');
   await expect(page.getByTestId('cell-B2')).toContainText('8');
+});
+
+test('builds and navigates a presentation', async ({ page }, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Presentation flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+  await page
+    .getByRole('heading', { name: 'Whiteboard Slides' })
+    .scrollIntoViewIfNeeded();
+
+  await expect(page.getByLabel('Presentation slides')).toContainText(
+    'Class Sheet',
+  );
+  await page.getByRole('button', { name: /Add Chart Slide/ }).click();
+  await expect(page.getByLabel('Presentation slides')).toContainText('Slide 4');
+
+  await page.getByRole('button', { name: 'Start Presentation' }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'Presentation viewer' }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Chart View' })).toBeVisible();
+
+  await page.keyboard.press('ArrowLeft');
+  await expect(
+    page.getByRole('heading', { name: 'Picture Graph' }),
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Exit Presentation' }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'Presentation viewer' }),
+  ).toBeHidden();
+});
+
+test('replays onboarding and shows privacy help', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Help flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+  await page.getByRole('button', { name: 'Help' }).click();
+  await page.getByRole('menuitem', { name: 'Privacy & safety' }).click();
+  await expect(
+    page.getByRole('dialog', { name: 'Privacy & Safety' }),
+  ).toBeVisible();
+  await expect(page.getByText('No trackers')).toBeVisible();
+  await page.getByRole('button', { name: 'Close dialog' }).click();
+
+  await page.getByRole('button', { name: 'Help' }).click();
+  await page.getByRole('menuitem', { name: 'Replay tour' }).click();
+  await expect(page.getByRole('dialog', { name: 'GridSplat™' })).toBeVisible();
+  await expect(page.getByLabel('First tour steps')).toContainText(
+    'Make a chart or picture graph',
+  );
 });

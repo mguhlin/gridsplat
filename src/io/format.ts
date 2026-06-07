@@ -25,7 +25,7 @@ export function createNativeFile(sheet: SheetData): GridSplatFile {
     version: GRID_SPLAT_FILE_VERSION,
     metadata: {
       createdAt: new Date().toISOString(),
-      title: 'GridSplat',
+      title: 'GridSplat™',
     },
     sheets: [
       {
@@ -49,7 +49,7 @@ export function validateNativeFile(
   value: unknown,
 ): asserts value is GridSplatFile {
   if (!value || typeof value !== 'object') {
-    throw new Error('The file is not a readable GridSplat file.');
+    throw new Error('The file is not a readable GridSplat™ file.');
   }
 
   const candidate = value as {
@@ -59,19 +59,19 @@ export function validateNativeFile(
 
   if (candidate.version !== GRID_SPLAT_FILE_VERSION) {
     throw new Error(
-      'This GridSplat file uses a version this app cannot open yet.',
+      'This GridSplat™ file uses a version this app cannot open yet.',
     );
   }
 
   if (!Array.isArray(candidate.sheets) || candidate.sheets.length === 0) {
-    throw new Error('This GridSplat file does not contain a sheet.');
+    throw new Error('This GridSplat™ file does not contain a sheet.');
   }
 
   const firstSheet = candidate.sheets[0] as { cells?: unknown } | undefined;
 
   if (!firstSheet || !Array.isArray(firstSheet.cells)) {
     throw new Error(
-      'This GridSplat file has sheet data GridSplat cannot read.',
+      'This GridSplat™ file has sheet data GridSplat™ cannot read.',
     );
   }
 }

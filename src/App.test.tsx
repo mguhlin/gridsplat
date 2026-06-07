@@ -6,6 +6,6 @@ describe('App', () => {
   it('renders the GridSplat heading', () => {
     const markup = renderToStaticMarkup(<App />);
 
-    expect(markup).toContain('GridSplat');
+    expect(markup).toContain('GridSplat™');
   });
 });

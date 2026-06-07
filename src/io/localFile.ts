@@ -30,7 +30,7 @@ export async function saveSheetLocally(sheet: SheetData): Promise<string> {
       suggestedName: 'gridsplat.gridsplat.json',
       types: [
         {
-          description: 'GridSplat file',
+          description: 'GridSplat™ file',
           accept: {
             'application/json': ['.gridsplat.json', '.json'],
           },
@@ -47,5 +47,5 @@ export async function saveSheetLocally(sheet: SheetData): Promise<string> {
 
   downloadText('gridsplat.gridsplat.json', text, 'application/json');
 
-  return 'Downloaded a GridSplat file.';
+  return 'Downloaded a GridSplat™ file.';
 }

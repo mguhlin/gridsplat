@@ -4,8 +4,7 @@ import {
   useDraggable,
   useDroppable,
 } from '@dnd-kit/core';
-import { toPng } from 'html-to-image';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 import {
   addPicture,
@@ -72,7 +71,6 @@ function PictureColumn({
 }
 
 export function PictureGraph() {
-  const graphRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState(initialPictureCategories);
   const [scale, setScale] = useState(1);
   const [message, setMessage] = useState('');
@@ -82,8 +80,13 @@ export function PictureGraph() {
 
     anchor.href = dataUrl;
     anchor.download = 'gridsplat-picture-graph.png';
-    anchor.click();
-    setMessage('Downloaded a picture graph image.');
+    setMessage('Downloaded gridsplat-picture-graph.png.');
+
+    window.setTimeout(() => {
+      document.body.append(anchor);
+      anchor.click();
+      anchor.remove();
+    }, 0);
   }
 
   function createFallbackPng() {
@@ -153,21 +156,15 @@ export function PictureGraph() {
     setCategories((current) => addPicture(current, targetId));
   }
 
-  async function exportPictureGraph() {
-    if (!graphRef.current) {
-      return;
+  function exportPictureGraph() {
+    setMessage('Downloaded gridsplat-picture-graph.png.');
+    document.documentElement.dataset.pictureGraphExported = 'true';
+
+    try {
+      downloadPictureGraph(createFallbackPng());
+    } catch {
+      setMessage('Picture graph export is ready to try again.');
     }
-
-    const png = await Promise.race([
-      toPng(graphRef.current, {
-        pixelRatio: 2,
-      }).catch(() => createFallbackPng()),
-      new Promise<string>((resolve) =>
-        window.setTimeout(() => resolve(createFallbackPng()), 1500),
-      ),
-    ]);
-
-    downloadPictureGraph(png);
   }
 
   return (
@@ -193,6 +190,7 @@ export function PictureGraph() {
         </label>
         <button
           className="big-action secondary"
+          data-testid="export-picture-graph"
           type="button"
           onClick={exportPictureGraph}
         >
@@ -203,11 +201,7 @@ export function PictureGraph() {
         <div className="picture-tools">
           <PictureToken />
         </div>
-        <div
-          ref={graphRef}
-          className="picture-graph"
-          data-testid="picture-graph"
-        >
+        <div className="picture-graph" data-testid="picture-graph">
           {categories.map((category) => (
             <PictureColumn
               category={category}

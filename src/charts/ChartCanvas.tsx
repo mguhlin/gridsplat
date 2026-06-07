@@ -37,12 +37,12 @@ interface ChartCanvasProps {
 }
 
 const chartColors = [
-  '#0757a8',
-  '#2f6f4f',
-  '#f2c94c',
-  '#d94f30',
-  '#6f42c1',
-  '#008a9a',
+  '#7c3aed',
+  '#a855f7',
+  '#faa634',
+  '#f97316',
+  '#22c55e',
+  '#6d28d9',
 ];
 
 export function ChartCanvas({ chart }: ChartCanvasProps) {
@@ -71,8 +71,8 @@ export function ChartCanvas({ chart }: ChartCanvasProps) {
                 ? chart.points.map(
                     (_, index) => chartColors[index % chartColors.length],
                   )
-                : '#0757a8',
-            borderColor: '#053f7a',
+                : '#7c3aed',
+            borderColor: '#5b21b6',
             borderWidth: 3,
             pointRadius: chart.type === 'scatter' ? 7 : 4,
             showLine: chart.type !== 'scatter',

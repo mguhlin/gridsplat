@@ -19,8 +19,9 @@ import { Toast } from './components/Toast';
 import { Tooltip } from './components/Tooltip';
 import { SpreadsheetGrid } from './grid/SpreadsheetGrid';
 import { PictureGraph } from './picturegraph/PictureGraph';
+import { PresentationMode } from './present/PresentationMode';
 
-type DialogKind = 'activity' | 'help' | null;
+type DialogKind = 'activity' | 'help' | 'privacy' | null;
 
 const toolbarMenus = [
   {
@@ -49,7 +50,13 @@ const toolbarMenus = [
   },
   {
     label: 'Help',
-    items: ['Quick help', 'Keyboard help', 'About GridSplat'],
+    items: [
+      'Quick help',
+      'Keyboard help',
+      'Replay tour',
+      'Privacy & safety',
+      'About GridSplat™',
+    ],
   },
 ];
 
@@ -64,8 +71,30 @@ export function App() {
   }
 
   function handleMenuAction(label: string) {
-    if (label === 'Quick help' || label === 'About GridSplat') {
+    if (
+      label === 'Quick help' ||
+      label === 'Keyboard help' ||
+      label === 'About GridSplat™'
+    ) {
       setDialogKind('help');
+      return;
+    }
+
+    if (label === 'Privacy & safety') {
+      setDialogKind('privacy');
+      return;
+    }
+
+    if (label === 'Replay tour') {
+      setIsSplashVisible(true);
+      return;
+    }
+
+    if (label === 'Start presentation' || label === 'Whiteboard view') {
+      document
+        .getElementById('present-title')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Presentation tools are ready below.');
       return;
     }
 
@@ -80,13 +109,20 @@ export function App() {
   return (
     <main className="app-shell" aria-labelledby="app-title">
       <header className="app-header">
-        <div>
-          <p className="eyebrow">GridSplat by DrawSplat</p>
-          <h1 id="app-title">GridSplat</h1>
-          <p className="intro">
-            A kid-friendly spreadsheet for sorting, graphing, and making sense
-            of data.
-          </p>
+        <div className="brand-lockup">
+          <img
+            alt=""
+            className="brand-icon"
+            src={`${import.meta.env.BASE_URL}gridsplat_icon.png`}
+          />
+          <div>
+            <p className="eyebrow">GridSplat™ by DrawSplat</p>
+            <h1 id="app-title">GridSplat™</h1>
+            <p className="intro">
+              A kid-friendly spreadsheet for sorting, graphing, and making sense
+              of data.
+            </p>
+          </div>
         </div>
         <div className="header-actions" aria-label="Quick actions">
           <Tooltip text="Start a new classroom sheet">
@@ -132,6 +168,7 @@ export function App() {
       <SpreadsheetGrid />
       <PictureGraph />
       <ActivitiesLibrary />
+      <PresentationMode />
 
       {isSplashVisible ? (
         <section
@@ -141,12 +178,24 @@ export function App() {
           role="dialog"
         >
           <div className="splash-panel">
-            <p className="eyebrow">Welcome</p>
-            <h2 id="welcome-title">GridSplat</h2>
-            <p className="splash-copy">
-              GridSplat by DrawSplat. A kid-friendly spreadsheet for sorting,
-              graphing, and making sense of data.
-            </p>
+            <img
+              alt=""
+              className="splash-image"
+              src={`${import.meta.env.BASE_URL}gridsplat_splash.png`}
+            />
+            <div className="splash-content">
+              <p className="eyebrow">Welcome</p>
+              <h2 id="welcome-title">GridSplat™</h2>
+              <p className="splash-copy">
+                GridSplat™ by DrawSplat. A kid-friendly spreadsheet for sorting,
+                graphing, and making sense of data.
+              </p>
+              <div className="tour-list" aria-label="First tour steps">
+                <span>1. Type data in the grid.</span>
+                <span>2. Make a chart or picture graph.</span>
+                <span>3. Save locally or present to the class.</span>
+              </div>
+            </div>
             <div className="splash-actions">
               <BigButton
                 icon={<FilePlus2 aria-hidden="true" size={24} />}
@@ -197,22 +246,70 @@ export function App() {
 
       <Dialog
         isOpen={dialogKind === 'help'}
-        title="GridSplat Help"
+        title="GridSplat™ Help"
         onClose={() => setDialogKind(null)}
       >
         <div className="help-list">
-          <p>Use arrow keys to move around the sheet.</p>
-          <p>Press Enter to edit a selected cell.</p>
-          <p>Paste a copied table to fill many cells at once.</p>
-          <p>Use Undo when you want to try again.</p>
+          <section>
+            <h3>Sheet basics</h3>
+            <p>Use arrow keys to move around the sheet.</p>
+            <p>Press Enter to edit a selected cell.</p>
+            <p>Paste a copied table to fill many cells at once.</p>
+            <p>Use Undo when you want to try again.</p>
+          </section>
+          <section>
+            <h3>Charts and picture graphs</h3>
+            <p>Select data, choose a chart type, then export a PNG.</p>
+            <p>
+              Use the pictograph scale box to change what each picture means.
+            </p>
+          </section>
+          <section>
+            <h3>Presentation and offline use</h3>
+            <p>Build whiteboard slides from the presentation panel.</p>
+            <p>
+              GridSplat™ can load again offline after the first successful
+              visit.
+            </p>
+          </section>
+        </div>
+      </Dialog>
+
+      <Dialog
+        isOpen={dialogKind === 'privacy'}
+        title="Privacy & Safety"
+        onClose={() => setDialogKind(null)}
+      >
+        <div className="help-list">
+          <section>
+            <h3>No default cloud storage</h3>
+            <p>
+              Student work stays in the browser unless someone saves a file or
+              connects their own cloud account.
+            </p>
+          </section>
+          <section>
+            <h3>No trackers</h3>
+            <p>
+              The app does not include analytics scripts or advertising
+              trackers.
+            </p>
+          </section>
+          <section>
+            <h3>Teacher review</h3>
+            <p>
+              TEKS tags are included as source-linked classroom metadata and
+              should be reviewed by a teacher before publication.
+            </p>
+          </section>
         </div>
       </Dialog>
 
       <Toast message={toastMessage} />
 
-      <div className="presentation-hint" aria-hidden="true">
+      <div className="presentation-hint print-note" aria-hidden="true">
         <MonitorUp size={20} />
-        <span>Presentation tools arrive in a later module.</span>
+        <span>GridSplat™ by DrawSplat</span>
         <HelpCircle size={20} />
       </div>
     </main>

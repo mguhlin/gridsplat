@@ -7,6 +7,12 @@ import {
   useRef,
   useState,
 } from 'react';
+import { ChartCanvas } from '../charts/ChartCanvas';
+import {
+  buildChartData,
+  type ChartDataModel,
+  type ChartKind,
+} from '../charts/chartData';
 import { exportCsv, importCsv } from '../io/csv';
 import { downloadText } from '../io/download';
 import { exportNativeJson, importNativeJson } from '../io/json';
@@ -84,6 +90,11 @@ export function SpreadsheetGrid() {
   const [scrollPosition, setScrollPosition] = useState({ top: 0, left: 0 });
   const [viewportSize, setViewportSize] = useState({ width: 900, height: 620 });
   const [fileMessage, setFileMessage] = useState('');
+  const [chart, setChart] = useState<ChartDataModel | null>(null);
+  const [chartSelection, setChartSelection] = useState<SelectionRange | null>(
+    null,
+  );
+  const [chartTitle, setChartTitle] = useState('My Chart');
 
   const totalWidth = useMemo(
     () => HEADER_SIZE + colWidths.reduce((sum, width) => sum + width, 0),
@@ -338,6 +349,42 @@ export function SpreadsheetGrid() {
     }
   }
 
+  function makeChart(type: ChartKind) {
+    const nextChart = buildChartData(sheet, selection, type, chartTitle);
+
+    if (nextChart.points.length === 0) {
+      setFileMessage('Select labels and numbers before making a chart.');
+      return;
+    }
+
+    setChart(nextChart);
+    setChartSelection(selection);
+    setFileMessage('Chart ready.');
+  }
+
+  function updateChartTitle(title: string) {
+    setChartTitle(title);
+    setChart((current) => (current ? { ...current, title } : current));
+  }
+
+  function exportChartPng() {
+    const canvas = document.querySelector<HTMLCanvasElement>(
+      '[data-testid="chart-canvas"]',
+    );
+
+    if (!canvas) {
+      setFileMessage('Make a chart before exporting an image.');
+      return;
+    }
+
+    const anchor = document.createElement('a');
+
+    anchor.href = canvas.toDataURL('image/png');
+    anchor.download = 'easysheet-chart.png';
+    anchor.click();
+    setFileMessage('Downloaded a chart image.');
+  }
+
   function handleScroll() {
     const scroller = scrollerRef.current;
 
@@ -457,6 +504,34 @@ export function SpreadsheetGrid() {
         <p aria-live="polite" className="file-message">
           {fileMessage}
         </p>
+      </div>
+      <div className="chart-picker" aria-label="Chart picker">
+        <label className="chart-title-field">
+          Chart title
+          <input
+            value={chartTitle}
+            onChange={(event) => updateChartTitle(event.target.value)}
+          />
+        </label>
+        {(['bar', 'line', 'pie', 'scatter'] as ChartKind[]).map((type) => (
+          <button
+            className="chart-type-button"
+            key={type}
+            type="button"
+            onClick={() => makeChart(type)}
+          >
+            <span className={`chart-preview ${type}`} aria-hidden="true" />
+            {type[0].toUpperCase()}
+            {type.slice(1)}
+          </button>
+        ))}
+        <button
+          className="chart-type-button"
+          type="button"
+          onClick={exportChartPng}
+        >
+          Export Chart PNG
+        </button>
       </div>
       <div
         ref={scrollerRef}
@@ -602,6 +677,36 @@ export function SpreadsheetGrid() {
           )}
         </div>
       </div>
+      {chart ? (
+        <section className="chart-panel" aria-label="Chart preview">
+          <div className="chart-canvas-wrap">
+            <ChartCanvas
+              chart={buildChartData(
+                sheet,
+                chartSelection ?? selection,
+                chart.type,
+                chart.title,
+              )}
+            />
+          </div>
+          <table className="chart-summary">
+            <caption>{chart.title} data</caption>
+            <tbody>
+              {buildChartData(
+                sheet,
+                chartSelection ?? selection,
+                chart.type,
+                chart.title,
+              ).points.map((point) => (
+                <tr key={point.label}>
+                  <th scope="row">{point.label}</th>
+                  <td>{point.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      ) : null}
     </section>
   );
 }

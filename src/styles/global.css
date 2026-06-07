@@ -425,6 +425,125 @@ h1 {
   font-weight: 800;
 }
 
+.chart-picker {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-2);
+  background: var(--color-surface);
+}
+
+.chart-title-field {
+  min-height: 56px;
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.chart-title-field input {
+  min-height: 42px;
+  min-width: 220px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: 0 var(--space-3);
+  color: var(--color-text);
+  background: #fff;
+  font-weight: 800;
+}
+
+.chart-type-button {
+  min-height: 56px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-primary-dark);
+  border-radius: var(--radius-2);
+  color: var(--color-text);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.chart-type-button:hover {
+  background: var(--color-header);
+}
+
+.chart-preview {
+  width: 42px;
+  height: 32px;
+  display: inline-block;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-2);
+  background: linear-gradient(
+    90deg,
+    #0757a8 0 25%,
+    transparent 25% 34%,
+    #2f6f4f 34% 58%,
+    transparent 58% 67%,
+    #f2c94c 67% 100%
+  );
+}
+
+.chart-preview.line {
+  background:
+    linear-gradient(135deg, transparent 44%, #0757a8 45% 55%, transparent 56%),
+    #fff;
+}
+
+.chart-preview.pie {
+  border-radius: 50%;
+  background: conic-gradient(#0757a8 0 38%, #2f6f4f 38% 70%, #f2c94c 70%);
+}
+
+.chart-preview.scatter {
+  background:
+    radial-gradient(circle at 20% 70%, #0757a8 0 4px, transparent 5px),
+    radial-gradient(circle at 50% 35%, #2f6f4f 0 4px, transparent 5px),
+    radial-gradient(circle at 75% 55%, #f2c94c 0 4px, transparent 5px), #fff;
+}
+
+.chart-panel {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(220px, 320px);
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 3px solid var(--color-primary-dark);
+  border-radius: var(--radius-2);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.chart-canvas-wrap {
+  min-height: 320px;
+  height: 360px;
+}
+
+.chart-summary {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface-strong);
+}
+
+.chart-summary caption {
+  padding: var(--space-2);
+  color: var(--color-text);
+  font-weight: 900;
+  text-align: left;
+}
+
+.chart-summary th,
+.chart-summary td {
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -605,6 +724,10 @@ h1 {
   .sheet-scroller {
     min-height: 520px;
     height: calc(100vh - 250px);
+  }
+
+  .chart-panel {
+    grid-template-columns: 1fr;
   }
 
   .splash-backdrop,

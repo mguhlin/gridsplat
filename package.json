@@ -13,6 +13,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "chart.js": "^4.5.1",
     "hyperformula": "^3.3.0",
     "lucide-react": "^1.17.0",
     "papaparse": "^5.5.3",

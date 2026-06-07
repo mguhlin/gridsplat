@@ -202,3 +202,60 @@ test('imports CSV and pastes Markdown tables', async ({ page }, testInfo) => {
   await expect(page.getByTestId('cell-D2')).toContainText('5');
   await expect(page.getByText('Pasted table into the sheet.')).toBeVisible();
 });
+
+test('creates a live-updating bar chart and exports PNG', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== 'chromium',
+    'Chart flow runs in Chromium.',
+  );
+
+  await dismissSplash(page);
+
+  await page.locator('input[type="file"]').setInputFiles({
+    name: 'fruit.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from('Fruit,Count\nApples,4\nBananas,6\nPears,3'),
+  });
+
+  const a1 = await page.getByTestId('cell-A2').boundingBox();
+  const b3 = await page.getByTestId('cell-B4').boundingBox();
+
+  if (!a1 || !b3) {
+    throw new Error('Expected chart source cells to be visible');
+  }
+
+  await page.mouse.move(a1.x + a1.width / 2, a1.y + a1.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(b3.x + b3.width / 2, b3.y + b3.height / 2);
+  await page.mouse.up();
+
+  await page
+    .getByLabel('Chart picker')
+    .getByLabel('Chart title')
+    .fill('Fruit Count');
+  await page.getByRole('button', { name: 'Bar' }).click();
+
+  await expect(page.getByLabel('Chart preview')).toBeVisible();
+  await expect(
+    page.getByRole('table', { name: 'Fruit Count data' }),
+  ).toContainText('Bananas');
+  await expect(
+    page.getByRole('table', { name: 'Fruit Count data' }),
+  ).toContainText('6');
+
+  await page.getByTestId('cell-B3').click();
+  await page.getByLabel('Edit cell B3').fill('9');
+  await page.getByLabel('Edit cell B3').press('Enter');
+
+  await expect(
+    page.getByRole('table', { name: 'Fruit Count data' }),
+  ).toContainText('9');
+
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export Chart PNG' }).click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe('easysheet-chart.png');
+});

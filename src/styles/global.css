@@ -79,6 +79,16 @@ select {
   text-transform: uppercase;
 }
 
+.eyebrow a,
+.splash-copy a,
+.print-note a {
+  color: inherit;
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
 h1 {
   margin: 0 0 var(--space-2);
   font-size: clamp(2rem, 5vw, 3.6rem);
@@ -263,7 +273,7 @@ h1 {
 
 .splash-panel,
 .dialog {
-  width: min(760px, 100%);
+  width: min(980px, 100%);
   max-height: calc(100vh - 48px);
   overflow: auto;
   border: 1px solid var(--color-border);
@@ -274,10 +284,10 @@ h1 {
 
 .splash-panel {
   display: grid;
-  grid-template-columns: minmax(180px, 300px) 1fr;
+  grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
   align-items: center;
   gap: var(--space-6);
-  padding: clamp(var(--space-6), 6vw, 3.5rem);
+  padding: clamp(var(--space-6), 5vw, 3rem);
 }
 
 .splash-image {
@@ -293,14 +303,15 @@ h1 {
 
 .splash-panel h2 {
   margin: 0 0 var(--space-4);
-  font-size: clamp(2.75rem, 8vw, 5rem);
+  font-size: clamp(2.75rem, 6vw, 4rem);
   line-height: 1;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 .splash-copy {
   max-width: 48ch;
-  margin: 0 0 var(--space-8);
+  margin: 0 0 var(--space-4);
   color: var(--color-muted);
   font-size: 1.25rem;
   line-height: 1.55;
@@ -308,13 +319,13 @@ h1 {
 
 .tour-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
-  gap: var(--space-3);
-  margin: 0 0 var(--space-6);
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
 }
 
 .tour-list span {
-  min-height: 72px;
+  min-height: 54px;
   display: flex;
   align-items: center;
   padding: var(--space-3);

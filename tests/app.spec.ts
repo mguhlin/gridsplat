@@ -53,7 +53,12 @@ test('opens activity dialog from the splash on touch', async ({
   await expect(
     page.getByRole('dialog', { name: 'Try an Activity' }),
   ).toBeVisible();
-  await expect(page.getByText('Class Survey')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Class Survey' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Load Weather Data' }).tap();
+  await expect(page.getByTestId('cell-A1')).toContainText('Day');
+  await expect(page.getByTestId('cell-B2')).toContainText('72');
 });
 
 test('enters data, selects a range, copies, pastes, and undoes on desktop', async ({

@@ -1,6 +1,6 @@
 # GridSplat™
 
-**GridSplat™ by DrawSplat** is a kid-friendly spreadsheet for sorting, graphing, and making sense of data.
+**GridSplat™ by [DrawSplat™](https://drawsplat.org)** is a kid-friendly spreadsheet for sorting, graphing, and making sense of data.
 
 GridSplat™ is a browser-based spreadsheet, charting, and graphing tool for grades 3-8.
 

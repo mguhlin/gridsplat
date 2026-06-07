@@ -1,5 +1,5 @@
 import {
-  Activity,
+  Activity as ActivityIcon,
   BarChart3,
   FilePlus2,
   FolderOpen,
@@ -12,6 +12,7 @@ import { useState } from 'react';
 
 import { BigButton } from './components/BigButton';
 import { ActivitiesLibrary } from './activities/ActivitiesLibrary';
+import { activities, type Activity } from './activities/activities';
 import { Dialog } from './components/Dialog';
 import { DropdownMenu } from './components/DropdownMenu';
 import { IconButton } from './components/IconButton';
@@ -106,6 +107,24 @@ export function App() {
     showToast(`${label} will be built in a later module.`);
   }
 
+  function loadActivity(activity: Activity) {
+    window.dispatchEvent(
+      new CustomEvent('gridsplat:load-matrix', {
+        detail: activity.sampleData,
+      }),
+    );
+    setDialogKind(null);
+    setIsSplashVisible(false);
+    showToast(`Loaded ${activity.title}.`);
+  }
+
+  const classSurveyActivity = activities.find(
+    (activity) => activity.id === 'class-pet-survey',
+  );
+  const weatherActivity = activities.find(
+    (activity) => activity.id === 'daily-temperature',
+  );
+
   return (
     <main className="app-shell" aria-labelledby="app-title">
       <header className="app-header">
@@ -116,7 +135,12 @@ export function App() {
             src={`${import.meta.env.BASE_URL}gridsplat_icon.png`}
           />
           <div>
-            <p className="eyebrow">GridSplat™ by DrawSplat</p>
+            <p className="eyebrow">
+              GridSplat™ by{' '}
+              <a href="https://drawsplat.org" rel="noreferrer" target="_blank">
+                DrawSplat™
+              </a>
+            </p>
             <h1 id="app-title">GridSplat™</h1>
             <p className="intro">
               A kid-friendly spreadsheet for sorting, graphing, and making sense
@@ -187,39 +211,47 @@ export function App() {
               <p className="eyebrow">Welcome</p>
               <h2 id="welcome-title">GridSplat™</h2>
               <p className="splash-copy">
-                GridSplat™ by DrawSplat. A kid-friendly spreadsheet for sorting,
-                graphing, and making sense of data.
+                GridSplat™ by{' '}
+                <a
+                  href="https://drawsplat.org"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  DrawSplat™
+                </a>
+                . A kid-friendly spreadsheet for sorting, graphing, and making
+                sense of data.
               </p>
               <div className="tour-list" aria-label="First tour steps">
                 <span>1. Type data in the grid.</span>
                 <span>2. Make a chart or picture graph.</span>
                 <span>3. Save locally or present to the class.</span>
               </div>
-            </div>
-            <div className="splash-actions">
-              <BigButton
-                icon={<FilePlus2 aria-hidden="true" size={24} />}
-                onClick={() => {
-                  setIsSplashVisible(false);
-                  showToast('New sheet ready.');
-                }}
-              >
-                New Sheet
-              </BigButton>
-              <BigButton
-                icon={<FolderOpen aria-hidden="true" size={24} />}
-                variant="secondary"
-                onClick={() => showToast('File opening arrives in Module 8.')}
-              >
-                Open a File
-              </BigButton>
-              <BigButton
-                icon={<Sparkles aria-hidden="true" size={24} />}
-                variant="secondary"
-                onClick={() => setDialogKind('activity')}
-              >
-                Try an Activity
-              </BigButton>
+              <div className="splash-actions">
+                <BigButton
+                  icon={<FilePlus2 aria-hidden="true" size={24} />}
+                  onClick={() => {
+                    setIsSplashVisible(false);
+                    showToast('New sheet ready.');
+                  }}
+                >
+                  New Sheet
+                </BigButton>
+                <BigButton
+                  icon={<FolderOpen aria-hidden="true" size={24} />}
+                  variant="secondary"
+                  onClick={() => showToast('File opening arrives in Module 8.')}
+                >
+                  Open a File
+                </BigButton>
+                <BigButton
+                  icon={<Sparkles aria-hidden="true" size={24} />}
+                  variant="secondary"
+                  onClick={() => setDialogKind('activity')}
+                >
+                  Try an Activity
+                </BigButton>
+              </div>
             </div>
           </div>
         </section>
@@ -232,14 +264,32 @@ export function App() {
       >
         <div className="dialog-grid">
           <article>
-            <Activity aria-hidden="true" size={28} />
+            <ActivityIcon aria-hidden="true" size={28} />
             <h3>Class Survey</h3>
             <p>Collect favorites, count totals, and build a chart next.</p>
+            {classSurveyActivity ? (
+              <button
+                className="big-action"
+                type="button"
+                onClick={() => loadActivity(classSurveyActivity)}
+              >
+                Load Class Survey
+              </button>
+            ) : null}
           </article>
           <article>
             <BarChart3 aria-hidden="true" size={28} />
             <h3>Weather Data</h3>
             <p>Type daily temperatures and compare the numbers.</p>
+            {weatherActivity ? (
+              <button
+                className="big-action"
+                type="button"
+                onClick={() => loadActivity(weatherActivity)}
+              >
+                Load Weather Data
+              </button>
+            ) : null}
           </article>
         </div>
       </Dialog>
@@ -309,7 +359,12 @@ export function App() {
 
       <div className="presentation-hint print-note" aria-hidden="true">
         <MonitorUp size={20} />
-        <span>GridSplat™ by DrawSplat</span>
+        <span>
+          GridSplat™ by{' '}
+          <a href="https://drawsplat.org" rel="noreferrer" target="_blank">
+            DrawSplat™
+          </a>
+        </span>
         <HelpCircle size={20} />
       </div>
     </main>

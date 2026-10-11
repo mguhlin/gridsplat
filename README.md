@@ -1,5 +1,7 @@
 # GridSplat™
 
+**Current DrawSplat and SplatWorks documentation:** [DrawSplat Wiki](https://drawsplat.org/wiki/) — installation, application guides, licensing, pricing, OAuth, and district privacy review.
+
 **GridSplat™ by [DrawSplat™](https://drawsplat.org)** is a kid-friendly spreadsheet for sorting, graphing, and making sense of data.
 
 GridSplat™ is a browser-based spreadsheet, charting, and graphing tool for grades 3-8.

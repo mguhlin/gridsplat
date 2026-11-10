@@ -1396,3 +1396,6 @@ h1 {
     font-weight: 900;
   }
 }
+
+/* Keep the final quick-action tooltip inside the viewport. */
+.header-actions>.tooltip-wrap:last-child .tooltip{left:auto;right:0;transform:translateY(4px)}.header-actions>.tooltip-wrap:last-child:hover .tooltip,.header-actions>.tooltip-wrap:last-child:focus-within .tooltip{transform:translateY(0)}
